@@ -176,6 +176,42 @@ textarea { min-height: 88px; }
 .copybtn { flex: none; width: 44px; height: 44px; border-radius: 14px; border: 0; background: rgba(76,95,213,.12); color: var(--link); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; } .copybtn:active { background: var(--primary); color: #fff; }
 .roles:empty { display: none; }
 .login .card .row.between { gap: 8px; } .login .card .row.between .btn { flex: 1 1 140px; justify-content: center; text-align: center; }
+
+/* ---- Barra inferior ---- */
+body.has-dock { padding-bottom: 96px; }
+#dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; pointer-events: none; }
+#dock[hidden] { display: none; }
+.dock-in { pointer-events: auto; position: relative; max-width: 620px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1.25fr 1fr 1fr; align-items: end; padding: 8px 6px calc(8px + env(safe-area-inset-bottom)); }
+.dock-bg { position: absolute; inset: 0; pointer-events: none; filter: drop-shadow(0 -6px 14px rgba(51,69,181,.22)); }
+.dock-bg i { display: block; height: 100%; background: #fff; border-radius: 26px 26px 0 0; -webkit-mask: radial-gradient(circle 42px at 50% 2px, transparent 41px, #000 42px); mask: radial-gradient(circle 42px at 50% 2px, transparent 41px, #000 42px); }
+.dk { position: relative; z-index: 1; border: 0; background: none; color: #7A81B3; font: inherit; font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; min-height: 52px; cursor: pointer; border-radius: 14px; }
+.dk svg { width: 24px; height: 24px; } .dk.on { color: var(--link, #3345B5); } .dk.on::after { content: ''; position: absolute; top: -8px; width: 22px; height: 3px; border-radius: 3px; background: var(--link, #3345B5); }
+.dk:focus-visible { outline: 3px solid #3345B5; outline-offset: 1px; }
+.dk-c { justify-content: flex-end; color: #5B3BD6; }
+.dk-c svg { position: absolute; top: -34px; left: 50%; transform: translateX(-50%); width: 28px; height: 28px; padding: 17px; box-sizing: content-box; border-radius: 50%; background: linear-gradient(145deg, #8A6CF7, #5B3BD6); color: #fff; box-shadow: 0 8px 18px rgba(91,59,214,.5); }
+.dk-c:active svg { transform: translateX(-50%) scale(.95); }
+.dk-c.on::after { display: none; } .dk-c.on svg { box-shadow: 0 0 0 4px rgba(91,59,214,.25), 0 8px 18px rgba(91,59,214,.5); }
+.dbadge { position: absolute; top: 2px; left: 54%; min-width: 18px; height: 18px; border-radius: 9px; background: #F59E0B; color: #3B2300; font-size: 11px; font-style: normal; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
+@media (min-width: 761px) { #dock { left: 50%; right: auto; transform: translateX(-50%); width: 560px; } .dock-bg i { border-radius: 26px; } .dock-in { margin-bottom: 14px; } body.has-dock { padding-bottom: 110px; } }
+/* ---- Escáner ---- */
+.scan-bg { position: fixed; inset: 0; z-index: 80; background: rgba(20,25,58,.72); display: flex; align-items: flex-end; justify-content: center; overflow: auto; }
+.scan-in { background: #f3f5ff; width: min(560px, 100%); max-height: 94vh; overflow: auto; border-radius: 26px 26px 0 0; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.scanbox { position: relative; background: #0d1030; border-radius: 18px; overflow: hidden; aspect-ratio: 1/1; max-height: 46vh; width: 100%; display: grid; place-items: center; }
+.scanbox video { width: 100%; height: 100%; object-fit: cover; }
+.scanframe { position: absolute; inset: 18%; border: 3px solid #fff; border-radius: 18px; box-shadow: 0 0 0 999px rgba(13,16,48,.35); }
+.scerr { color: #B42318; font-weight: 600; }
+.qrthumb { width: 64px; height: 64px; border-radius: 10px; background: #fff; cursor: pointer; border: 0; padding: 2px; box-shadow: 0 4px 10px rgba(51,69,181,.2); }
+.autodata { background: #fff; border-radius: 16px; padding: 12px; margin-bottom: 10px; box-shadow: inset 0 0 0 2px #1BAF7A; } .autodata .grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 6px; } .autodata b { overflow-wrap: anywhere; }
+.labpick { display: grid; gap: 8px; } .labopt { text-align: left; border: 0; border-radius: 16px; padding: 12px 14px; background: #fff; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 2px; box-shadow: inset 0 0 0 1px rgba(51,69,181,.18); } .labopt span { font-size: 12.5px; color: var(--muted); } .labopt[aria-pressed="true"] { box-shadow: inset 0 0 0 3px #3345B5; background: #EEF1FF; }
+/* ---- Panel de inicio con gráficas ---- */
+.dashhero { flex-direction: column; gap: 10px; padding: 16px; } .dashhero h1 { font-size: 22px; margin: 2px 0; } .dashhero p, .dashhero small { color: #E4E9FF; margin: 0; }
+.kpb { text-align: left; border: 0; font: inherit; color: inherit; cursor: pointer; } button.kpb:active { transform: scale(.98); }
+.chartc { gap: 8px; } .ch { width: 100%; height: auto; display: block; } .dnwrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; } .dn { width: 132px; height: 132px; flex: none; }
+.dnlg { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; flex: 1; min-width: 140px; font-size: 13px; } .dnlg li { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: center; } .dnlg i, .lg i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+.lg { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); } .lg span { display: inline-flex; gap: 6px; align-items: center; }
+.tv { font-size: 12.5px; } .tv summary { cursor: pointer; color: var(--link); font-weight: 600; min-height: 28px; }
+.needrow { width: 100%; text-align: left; border: 0; background: rgba(255,255,255,.75); border-radius: 14px; padding: 10px 12px; margin-top: 6px; font: inherit; color: inherit; display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; min-height: 48px; }
 </style>
 </head>
 <body>
@@ -185,9 +221,13 @@ textarea { min-height: 88px; }
   <div id="topright" class="row" style="margin-left:auto"></div>
 </div></header>
 <div id="app"></div>
+<nav id="dock" aria-label="Barra principal" hidden></nav>
 <div id="toast-host" aria-live="polite"></div>
 <script src="data.js"></script>
 <script src="engine.js"></script>
+<script src="jsqr.js"></script>
+<script src="qrgen.js"></script>
+<script src="qrtools.js"></script>
 <script src="ui.js"></script>
 <script src="ui2.js"></script>
 <script src="ui3.js"></script>
@@ -195,5 +235,7 @@ textarea { min-height: 88px; }
 <script src="ui4b.js"></script>
 <script src="ui5.js"></script>
 <script src="ui6.js"></script>
+<script src="ui7.js"></script>
+<script src="ui8.js"></script>
 </body>
 </html>

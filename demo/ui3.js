@@ -277,7 +277,7 @@
     const g = S.login; let b = '';
     const DEMO = [['lab', 'Laboratorio', 'Dueña y bioanalista. Lo ve todo y firma.'], ['recep', 'Recepción', 'Atiende al paciente: lo registra, crea la orden y cobra.'], ['pat', 'Paciente', 'Ve sus resultados y su código QR.'], ['doc', 'Médico', 'Ve los resultados que el paciente le permite.'], ['adm', 'Superadmin', 'Dueño de LABS: suscripciones y cobros.']];
     const demos = '<div class="card note"><b>Entrar sin clave (demostración)</b><p class="small muted">Elige quién quieres ser:</p><div class="demogrid">' + DEMO.map(function (x) { return '<button class="demobtn" type="button" data-a="demo" data-v="' + x[0] + '"><b>' + x[1] + '</b><span>' + x[2] + '</span></button>'; }).join('') + '</div><details class="acc"><summary>Ver correos y clave</summary><span class="small muted">lab@demo.com · recep@demo.com · pat@demo.com · doc@demo.com · adm@demo.com. Clave: demo1234. Código de seguridad: 123456.</span></details></div>';
-    if (g.step === 'form') b = '<div class="card"><h1>Entrar a LABS</h1><p class="muted">Tus resultados de laboratorio, en un solo lugar.</p>' + (g.note ? '<div class="okmsg" role="status">' + esc(g.note) + '</div>' : '') + fld('Correo', 'lg-email', { type: 'email', ph: 'tu@correo.com', enter: 'lg-go' }) + fld('Clave', 'lg-pass', { type: 'password', enter: 'lg-go' }) + errBox('lg') + '<button class="btn" type="button" data-a="lg-go">Entrar</button><div class="row between"><button class="btn ghost sm" type="button" data-a="lg-forgot">Olvidé mi clave</button><button class="btn ghost sm" type="button" data-a="lg-reg">Crear cuenta de paciente</button></div></div>' + demos;
+    if (g.step === 'form') b = '<div class="card"><h1>Entrar a LABS</h1><p class="muted">Tus resultados de laboratorio, en un solo lugar.</p>' + (g.note ? '<div class="okmsg" role="status">' + esc(g.note) + '</div>' : '') + fld('Correo', 'lg-email', { type: 'email', ph: 'tu@correo.com', enter: 'lg-go' }) + fld('Clave', 'lg-pass', { type: 'password', enter: 'lg-go' }) + errBox('lg') + '<button class="btn" type="button" data-a="lg-go">Entrar</button><div class="row between"><button class="btn ghost sm" type="button" data-a="lg-forgot">Olvidé mi clave</button><button class="btn ghost sm" type="button" data-a="lg-reg">Nuevo paciente</button></div></div>' + demos;
     else if (g.step === 'code') b = '<div class="card"><h1>Código de seguridad</h1><p class="muted">Te enviamos un código de 6 números al teléfono o correo registrado.</p><div class="okmsg">Para la demostración, el código es 123456.</div>' + fld('Código', 'lg-code', { max: 6, mode: 'numeric', enter: 'lg-code' }) + errBox('lg') + '<button class="btn" type="button" data-a="lg-code">Verificar</button><div class="row between"><button class="btn ghost sm" type="button" data-a="lg-resend">Reenviar código</button><button class="btn ghost sm" type="button" data-a="lg-back">Volver</button></div></div>';
     else if (g.step === 'fp1') b = '<div class="card"><h1>Recuperar mi clave</h1><p class="muted">Escribe tu correo y te enviamos un enlace.</p>' + fld('Correo', 'fp-email', { type: 'email', enter: 'fp-send' }) + errBox('fp') + '<button class="btn" type="button" data-a="fp-send">Enviar enlace</button><button class="btn ghost sm" type="button" data-a="lg-back">Volver</button></div>';
     else if (g.step === 'fp2') b = '<div class="card"><h1>Revisa tu correo</h1><p>Si el correo está registrado, te enviamos un enlace para elegir una clave nueva. Vence en 30 minutos.</p><div class="okmsg">En la demostración puedes abrir el enlace aquí:</div><button class="btn" type="button" data-a="fp-open">Abrir el enlace de ejemplo</button><button class="btn ghost sm" type="button" data-a="lg-back">Volver</button></div>';
@@ -288,10 +288,10 @@
     return '<div class="login"><div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:16px">' + b + '</div></div>';
   }
   function enter(acct, silent) {
-    S.hub = true; S.sec = {}; S.docOpen = null;
+    S.hub = false; S.from = null; S.sec = {}; S.docOpen = null;
     S.auth = { id: acct.id, role: acct.role, sub: acct.sub || null, name: acct.name, pid: acct.pid || null, email: acct.email };
     S.role = acct.role; S.viewAs = null; S.returnRole = null; S.resIdx = null; S.modal = null; S.prof = 'datos'; S.sup.open = null; S.sup.newt = false; S.sup.tab = 'ayuda'; clearAllForms();
-    S[acct.role] = acct.role === 'lab' ? (acct.sub === 'recep' ? 'nueva' : 'resumen') : acct.role === 'adm' ? 'resumen' : 'lista';
+    S[acct.role] = 'inicio';
     acct.last = when(); S.login = { step: 'form', fails: 0, lockUntil: 0, cfails: 0, acct: null, note: '' };
     if (acct.role === 'lab' || acct.role === 'adm') logAudit(acct.name, 'Inició sesión');
     render(); window.scrollTo(0, 0); if (!silent) toast('Bienvenido, ' + acct.name.split(' (')[0] + '.');
@@ -315,7 +315,7 @@
   const NO_SPLIT = { 'lab/nueva': 1, 'lab/resultado': 1, 'lab/ordenes': 1 };
   function secTitle(el, n) { const h = el.querySelector('h2,h3'); return h ? h.textContent.replace(/\s+/g, ' ').trim() : 'Sección ' + (n + 1); }
   function sectionize(html, key) {
-    if (NO_SPLIT[key]) return html;
+    if (NO_SPLIT[key] || /\/(inicio|menu|qr)$/.test(key)) return html;
     const box = document.createElement('div'); box.innerHTML = html; const pre = [], secs = [];
     Array.prototype.forEach.call(box.children, function (el) {
       if (el.classList.contains('kpi') || el.querySelector('.kpi')) pre.push(el);
@@ -332,7 +332,7 @@
     return pre.map(function (e) { return e.outerHTML; }).join('') + '<div class="card"><h2>Toca lo que quieres ver</h2><div class="secs">' + secs.map(function (e, i) { return '<button type="button" class="secbtn" data-a="sec" data-v="' + i + '"><span>' + esc(secTitle(e, i)) + '</span><i aria-hidden="true">›</i></button>'; }).join('') + '</div></div>';
   }
   function mobShell(r, page, nav, view, ok, banner, who) {
-    const hub = S.hub !== false;
+    const hub = false;
     if (hub) {
       return '<div class="shell mob"><main class="main">' + banner + '<div class="card dark hubhead"><b>' + esc(who) + '</b><small>' + esc(subtitle()) + '</small></div><div class="hub">' + nav.map(function (i) {
         if (i.sep) return '<div class="hubsep">' + esc(i.sep) + '</div>';
@@ -341,7 +341,9 @@
     }
     const cur = nav.filter(function (i) { return i.id === page; })[0]; const label = cur ? cur.label : '';
     const inner = ok && view ? sectionize(view(), r + '/' + page) : '<div class="card"><h2>Esta pantalla no está disponible para tu rol.</h2></div>';
-    return '<div class="shell mob"><main class="main"><div class="backbar"><button class="btn ghost sm" type="button" data-a="back">‹ Atrás</button><b>' + esc(label) + '</b></div>' + banner + inner + '</main></div>';
+    const TOP = { inicio: 1, menu: 1, perfil: 1, ordenes: 1, nueva: r === 'lab' && S.auth.sub === 'recep', lista: r !== 'lab', qr: 1, pagos: 1, labs: 1 }; const sub = (S.sup && (S.sup.open || S.sup.newt)) || (r === 'doc' && S.docOpen !== null && S.docOpen !== undefined) || (r === 'pat' && S.resIdx !== null && S.resIdx !== undefined) || (S.sec && S.sec[r + '/' + page] !== undefined && S.sec[r + '/' + page] !== null);
+    const back = !TOP[page] || sub;
+    return '<div class="shell mob"><main class="main">' + (back ? '<div class="backbar"><button class="btn ghost sm" type="button" data-a="back">‹ Atrás</button><b>' + esc(label) + '</b></div>' : '') + banner + inner + '</main></div>';
   }
 
   /* ---------- Hoja tamaño carta (816 x 1056) que se ajusta al ancho de la pantalla ---------- */
@@ -358,10 +360,11 @@
   EXT.fitPapers = fitPapers;
   function header() {
     const roles = document.getElementById('roles'), tr = document.getElementById('topright');
-    if (!S.auth) { roles.innerHTML = ''; tr.innerHTML = '<span class="demo-tag">Demo con datos de ejemplo</span>'; return; }
+    if (!S.auth) { roles.innerHTML = ''; tr.innerHTML = '<span class="demo-tag">Demo con datos de ejemplo</span>'; if (window.UI_dock) window.UI_dock(); return; }
     roles.innerHTML = '<span class="small muted" style="padding:0 8px;align-self:center">Demo:</span>' + [['lab', 'Laboratorio'], ['pat', 'Paciente'], ['doc', 'Médico'], ['adm', 'Superadmin']].map(function (x) { return '<button type="button" data-a="demo" data-v="' + x[0] + '" aria-pressed="' + (S.role === x[0]) + '">' + x[1] + '</button>'; }).join('');
     const n = unread(S.role);
     tr.innerHTML = '<button class="iconbtn" type="button" data-a="gopage" data-v="avisos" aria-label="Avisos' + (n ? ', ' + n + ' sin leer' : '') + '">Avisos' + (n ? '<span class="badge">' + n + '</span>' : '') + '</button><button class="iconbtn" type="button" data-a="gopage" data-v="soporte">Ayuda</button><span class="small nm" style="font-weight:600">' + esc(S.auth.name.split(' (')[0]) + '</span><button class="btn ghost sm" type="button" data-a="logout">Salir</button>';
+    if (window.UI_dock) window.UI_dock();
   }
   function render() {
     const y = window.scrollY; const app = document.getElementById('app'); const act = document.activeElement; const key = act && act.getAttribute ? act.getAttribute('data-c') : null; const sel = act && act.selectionStart !== undefined ? [act.selectionStart, act.selectionEnd] : null;
@@ -380,7 +383,7 @@
   function download(name, mime, content) { try { const b = new Blob([content], { type: mime }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('Descarga lista: ' + name); } catch (e) { toast('Aquí el navegador no permite descargar. En la versión real se descarga el archivo.'); } }
   EXT.download = download;
   const A = EXT.actions;
-  A['nav'] = function (v) { S.hub = false; S.sec = {}; S.docOpen = null; S[S.role] = v; S.resIdx = null; S.sup.open = null; S.sup.newt = false; S.err = {}; S.ordSel = null; render(); window.scrollTo(0, 0); };
+  A['nav'] = function (v) { S.from = S[S.role] === 'menu' ? 'menu' : null; S.hub = false; S.sec = {}; S.docOpen = null; S[S.role] = v; S.resIdx = null; S.sup.open = null; S.sup.newt = false; S.err = {}; S.ordSel = null; render(); window.scrollTo(0, 0); };
   A['gopage'] = A['nav'];
   A['hub'] = function () { S.hub = true; S.sec = {}; S.docOpen = null; S.err = {}; render(); window.scrollTo(0, 0); };
   A['sec'] = function (v) { S.sec = S.sec || {}; S.sec[S.role + '/' + S[S.role]] = parseInt(v, 10); render(); window.scrollTo(0, 0); };
@@ -390,7 +393,7 @@
     if (S.sup && (S.sup.open || S.sup.newt)) { S.sup.open = null; S.sup.newt = false; render(); window.scrollTo(0, 0); return; }
     if (S.role === 'pat' && S.pat === 'lista' && S.resIdx !== null && S.resIdx !== undefined) { S.resIdx = null; render(); window.scrollTo(0, 0); return; }
     if (S.role === 'doc' && S.doc === 'lista' && S.docOpen !== null && S.docOpen !== undefined) { S.docOpen = null; render(); window.scrollTo(0, 0); return; }
-    A['hub']();
+    S.hub = false; S[S.role] = S.from === 'menu' ? 'menu' : 'inicio'; S.from = null; S.resIdx = null; render(); window.scrollTo(0, 0);
   };
   A['pz'] = function () { S.pz = S.pz === 'big' ? 'fit' : 'big'; render(); };
   A['demo'] = function (v) { const map = { lab: 'a1', recep: 'a2', pat: 'a3', doc: 'a4', adm: 'a5' }; const a = S.accounts.filter(function (x) { return x.id === map[v]; })[0]; enter(a); };
@@ -493,7 +496,7 @@
   A['p-dep-back'] = function () { S.viewAs = null; S.resIdx = null; render(); };
   A['p-dep-del'] = function (v) { S.deps = S.deps.filter(function (d) { return d.id !== v; }); toast('Dependiente quitado.'); };
   /* médico */
-  A['mode2'] = function (v) { if (v === 'pat') { S.returnRole = 'doc'; S.auth.basePid = S.auth.pid; S.auth.pid = 'p7'; S.role = 'pat'; S.pat = 'lista'; } else { S.role = 'doc'; S.auth.pid = S.auth.basePid || null; S.returnRole = null; S.viewAs = null; } S.resIdx = null; S.hub = true; S.docOpen = null; render(); window.scrollTo(0, 0); };
+  A['mode2'] = function (v) { if (v === 'pat') { S.returnRole = 'doc'; S.auth.basePid = S.auth.pid; S.auth.pid = 'p7'; S.role = 'pat'; S.pat = 'inicio'; } else { S.role = 'doc'; S.auth.pid = S.auth.basePid || null; S.returnRole = null; S.viewAs = null; } S.resIdx = null; S.hub = false; S.doc = 'inicio'; S.docOpen = null; render(); window.scrollTo(0, 0); };
   A['docsel'] = function (v) { S.docSel = parseInt(v, 10); S.docOpen = S.docSel; render(); window.scrollTo(0, 0); };
   A['docback'] = function () { S.docOpen = null; render(); window.scrollTo(0, 0); };
   A['d-note'] = function (v) { S.notes = S.notes || {}; S.notes[v] = F('note-' + v); toast('Nota guardada.'); };

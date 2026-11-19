@@ -160,25 +160,23 @@
   }
 
   const LABS = [
-    { id: 'l1', name: 'Laboratorio Ejemplo', city: 'Valencia', state: 'Carabobo', plan: 'Pro', price: 120, status: 'Al día', due: 12, orders30: 0, since: 'ene 2026' },
-    { id: 'l2', name: 'Laboratorio Norte', city: 'Maracay', state: 'Aragua', plan: 'Básico', price: 60, status: 'Al día', due: 20, orders30: 612, since: 'feb 2026' },
-    { id: 'l3', name: 'Bioanálisis Valencia Sur', city: 'Valencia', state: 'Carabobo', plan: 'Pro', price: 120, status: 'Vence pronto', due: 3, orders30: 1480, since: 'mar 2026' },
-    { id: 'l4', name: 'Clínica Santa Lucía', city: 'Barquisimeto', state: 'Lara', plan: 'Red', price: 260, status: 'Al día', due: 25, orders30: 2310, since: 'abr 2026' },
-    { id: 'l5', name: 'Bioanálisis La Paz', city: 'Maracaibo', state: 'Zulia', plan: 'Básico', price: 60, status: 'Atrasado', due: -9, orders30: 205, since: 'jun 2026' },
-    { id: 'l6', name: 'Laboratorio Andino', city: 'Mérida', state: 'Mérida', plan: 'Básico', price: 60, status: 'Prueba gratis', due: 14, orders30: 96, since: 'nov 2026' },
-    { id: 'l7', name: 'Lab San Diego', city: 'San Diego', state: 'Carabobo', plan: 'Básico', price: 60, status: 'Al día', due: 8, orders30: 340, since: 'may 2026' },
-    { id: 'l8', name: 'Maracay Plus', city: 'Maracay', state: 'Aragua', plan: 'Pro', price: 120, status: 'Al día', due: 17, orders30: 720, since: 'may 2026' },
-    { id: 'l9', name: 'Lab La Victoria', city: 'La Victoria', state: 'Aragua', plan: 'Básico', price: 60, status: 'Al día', due: 22, orders30: 280, since: 'jul 2026' },
-    { id: 'l10', name: 'Centro Médico Lara', city: 'Cabudare', state: 'Lara', plan: 'Pro', price: 120, status: 'Al día', due: 5, orders30: 810, since: 'jun 2026' },
-    { id: 'l11', name: 'Lab Iribarren', city: 'Barquisimeto', state: 'Lara', plan: 'Básico', price: 60, status: 'Vence pronto', due: 2, orders30: 430, since: 'ago 2026' },
-    { id: 'l12', name: 'Lab Zulia Norte', city: 'Maracaibo', state: 'Zulia', plan: 'Básico', price: 60, status: 'Al día', due: 11, orders30: 260, since: 'ago 2026' }
+    { id: 'l1', name: 'Laboratorio Ejemplo', city: 'Valencia', state: 'Carabobo', plan: 'Plan único', price: 20, status: 'Al día', due: 12, orders30: 0, since: 'ene 2026' },
+    { id: 'l2', name: 'Laboratorio Norte', city: 'Maracay', state: 'Aragua', plan: 'Plan único', price: 20, status: 'Al día', due: 20, orders30: 612, since: 'feb 2026' },
+    { id: 'l3', name: 'Bioanálisis Valencia Sur', city: 'Valencia', state: 'Carabobo', plan: 'Plan único', price: 20, status: 'Vence pronto', due: 3, orders30: 1480, since: 'mar 2026' },
+    { id: 'l4', name: 'Clínica Santa Lucía', city: 'Barquisimeto', state: 'Lara', plan: 'Plan único', price: 20, status: 'Al día', due: 25, orders30: 2310, since: 'abr 2026' },
+    { id: 'l5', name: 'Bioanálisis La Paz', city: 'Maracaibo', state: 'Zulia', plan: 'Plan único', price: 20, status: 'Atrasado', due: -9, orders30: 205, since: 'jun 2026' },
+    { id: 'l6', name: 'Laboratorio Andino', city: 'Mérida', state: 'Mérida', plan: 'Plan único', price: 20, status: 'Prueba gratis', due: 14, orders30: 96, since: 'nov 2026' },
+    { id: 'l7', name: 'Lab San Diego', city: 'San Diego', state: 'Carabobo', plan: 'Plan único', price: 20, status: 'Al día', due: 8, orders30: 340, since: 'may 2026' },
+    { id: 'l8', name: 'Maracay Plus', city: 'Maracay', state: 'Aragua', plan: 'Plan único', price: 20, status: 'Al día', due: 17, orders30: 720, since: 'may 2026' },
+    { id: 'l9', name: 'Lab La Victoria', city: 'La Victoria', state: 'Aragua', plan: 'Plan único', price: 20, status: 'Al día', due: 22, orders30: 280, since: 'jul 2026' },
+    { id: 'l10', name: 'Centro Médico Lara', city: 'Cabudare', state: 'Lara', plan: 'Plan único', price: 20, status: 'Al día', due: 5, orders30: 810, since: 'jun 2026' },
+    { id: 'l11', name: 'Lab Iribarren', city: 'Barquisimeto', state: 'Lara', plan: 'Plan único', price: 20, status: 'Vence pronto', due: 2, orders30: 430, since: 'ago 2026' },
+    { id: 'l12', name: 'Lab Zulia Norte', city: 'Maracaibo', state: 'Zulia', plan: 'Plan único', price: 20, status: 'Al día', due: 11, orders30: 260, since: 'ago 2026' }
   ];
 
 
   const PLANS = [
-    { name: 'Básico', price: 60, text: 'Resultados, firma y sello, 1 sede' },
-    { name: 'Pro', price: 120, text: 'Todo lo anterior, reportes y precios, 3 sedes' },
-    { name: 'Red', price: 260, text: 'Todo lo anterior, informes de la red, sedes ilimitadas' }
+    { name: 'Plan único', price: 20, text: 'Todo incluido: resultados, firma y sello, reportes, red de laboratorios y sedes' }
   ];
 
   const AUDIT_SEED = [

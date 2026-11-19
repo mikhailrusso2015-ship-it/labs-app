@@ -30,3 +30,5 @@ Código de seguridad (segundo paso): `123456`. También hay botones de atajo en 
 - `docs/02-privacidad-y-estadisticas.md`: cómo se protege la identidad en las estadísticas.
 - `docs/03-alcance-del-mvp.md`: qué se muestra y qué se construye primero.
 - `docs/04-mapa-de-pantallas.md`: mapa de todas las pantallas y botones.
+
+- Inicio con gráficas por tipo de usuario, barra inferior con botón QR (escáner con cámara), QR en métodos de pago y plan único de $20.

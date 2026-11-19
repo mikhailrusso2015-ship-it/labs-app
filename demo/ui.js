@@ -8,7 +8,7 @@
     resIdx: null, docSel: 0, sendScenario: 'alto', sendChecks: { review: false, call: false, code: '' },
     labs: D.LABS.map(function (x) { return Object.assign({}, x); }), audit: D.AUDIT_SEED.slice(), approved: {}, rejected: {}, resets: [],
     modal: null, toast: '', perm: { l1: true, l3: false, l2req: null }, demoSecurity: { pin: true, notify: true, discrete: false },
-    newLab: { name: '', city: '', plan: 'Básico' }, resetType: 'Laboratorio', resetWho: 0
+    newLab: { name: '', city: '', plan: 'Plan único' }, resetType: 'Laboratorio', resetWho: 0
   };
   window.S = S;
   const CAT = D.CATALOG;

@@ -115,3 +115,22 @@ Cada orden muestra su avance: Paciente, Orden y cobro, Confirmación, Muestra, R
 - **Métodos de pago del laboratorio**: agregar, editar, activar/apagar y quitar. Cada dato tiene un icono de dos hojas para copiarlo y un botón "Copiar todo". El paciente los ve en **Cómo pagar**.
 - **Métodos de pago del superadmin** (Ajustes): los laboratorios los ven en Configuración, en "Cómo pagar mi suscripción a LABS", también con copiar.
 - **Atajos de demostración**: cada rol tiene su tarjeta con una línea que explica qué hace (Recepción = atiende al paciente, crea la orden y cobra).
+
+## 9. Inicio con gráficas, barra inferior y códigos QR
+
+**Al entrar, cada usuario ve un panel con gráficas** (ya no una lista de botones):
+- Laboratorio: ventas y costos por mes, exámenes más pedidos, estado de las órdenes, por cobrar.
+- Recepción: solo conteos (órdenes de hoy, sin cobrar, esperando al paciente). No ve dinero.
+- Paciente: su último examen (normal / a vigilar), su línea de glucosa, lo que tiene en curso y por pagar.
+- Médico: pacientes con avisos, avisos por paciente, a quién atender primero.
+- Superadmin: ingreso mensual, estado de los laboratorios, laboratorios con más exámenes, pendientes del día.
+
+**Barra inferior (5 botones):** Inicio · botón de la izquierda según el rol · **QR al centro (flotando sobre una curva de la barra)** · **Menú** · **Yo**.
+- **Menú** guarda todas las opciones de antes, agrupadas.
+- **Yo** abre el perfil (y desde ahí, Configuración).
+- **QR:** paciente = muestra su QR; laboratorio y recepción = abre la cámara y la planilla se llena con nombre, apellido, cédula, teléfono, correo y dirección; médico = escanea al paciente (recibe acceso) o muestra su QR. Superadmin = Pagos.
+- Si no hay cámara: subir foto del QR o elegir a quién "escanear" (demostración).
+
+**Pagos con QR:** el laboratorio sube un QR por método de pago. El paciente lo toca, se abre en su ventana con "Descargar QR" y "Escanear QR". Si espera resultados de varios laboratorios, en "Cómo pagar" elige primero el laboratorio.
+
+**Plan:** un solo plan de $20 al mes.

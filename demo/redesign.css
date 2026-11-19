@@ -163,3 +163,11 @@ details.mvd[open] .mvmore { display: none; }
 details.mvd .mvb { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; }
 #actbar .btn .rdi svg { width: 18px; height: 18px; margin-right: 6px; }
 .svw { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* Estudios de imagen */
+#app img[alt*="estudio"], #app img[alt*="adjunta"] { cursor: zoom-in; background: #000; }
+.rep-mini { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(76,95,213,.15); }
+.rep-mini:first-child { border-top: 0; }
+.rep-mini img { width: 96px; height: 72px; object-fit: cover; border-radius: 10px; flex: none; }
+#app .main img[alt="Imagen del estudio"] { max-height: 340px; width: auto; max-width: 100%; display: block; }
+.tcards.desk .acc.oa > .oact { z-index: 2; }
+#app .main img[alt="Imagen del estudio"] { width: auto !important; height: auto !important; background: transparent; }

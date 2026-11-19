@@ -94,3 +94,18 @@ Reglas:
 - **Enfermedades tropicales en la red**: conteos juntos por zona y semana, con mínimo de 10 casos para mostrar el número y una etiqueta de tendencia (estable, subiendo, subiendo mucho).
 
 Pantallas nuevas o ampliadas: Nueva orden (paquetes + buscador), Exámenes y precios (buscador, grupos, paquetes, alta de examen), Cargar resultados (positivo/negativo y cultivo), Red de laboratorios y Alertas de la red (tarjeta de enfermedades tropicales), vista del paciente (pruebas de infecciones y cultivos).
+
+## 7. Camino completo del laboratorio y registro de pacientes
+
+**Atender pacientes** (laboratorio y recepción), 6 pasos en orden: 1 Recibir al paciente (registrar, buscar, nueva orden) → 2 Esperando confirmación → 3 Tomar la muestra (tipo y rótulo confirmado) → 4 Cargar resultados (solo el bioanalista) → 5 Enviados (en el teléfono del paciente o entrega impresa si no tiene cuenta) → 6 Cobros pendientes.
+Cada orden muestra su avance: Paciente, Orden y cobro, Confirmación, Muestra, Resultados, Firma y envío. No se pueden cargar resultados sin registrar la toma de muestra.
+
+**Mis pacientes** (registro propio del laboratorio):
+- Se guarda solo nombre, apellido y cédula. Edad y sexo son opcionales.
+- Exige la casilla de autorización del paciente.
+- La cédula sale oculta; "Ver cédula" la muestra y queda anotado en el registro de auditoría.
+- Si la cédula ya tiene cuenta en LABS, no se revela quién es: se indica buscarla en Nueva orden y el paciente confirma desde su teléfono.
+- Corregir datos (recepción y dueño) y Borrar datos (solo dueño; las órdenes quedan sin nombre).
+- Historial de órdenes por paciente y nota interna. Solo ve su lista el personal de ese laboratorio.
+
+**Teléfono:** cada rol abre un menú de botones; cada opción es una pantalla nueva con botón Atrás. Las pantallas largas se dividen en secciones que se abren al tocarlas. La hoja de resultados es tamaño carta y se ajusta al ancho.

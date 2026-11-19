@@ -32,7 +32,7 @@
   function syncModal() { document.querySelectorAll('.modal [data-c^="f-"]').forEach(function (el) { const n = el.getAttribute('data-c').slice(2); if (S.f[n] === undefined) return; if (el.type === 'checkbox') el.checked = !!S.f[n]; else if (el.value !== String(S.f[n])) el.value = S.f[n]; }); }
   function dlgHtml() {
     const m = S.modal; if (!m || m.type !== 'dlg') return '';
-    return '<div class="modal-bg" data-a="closebg"><div class="modal" role="dialog" aria-modal="true" aria-label="' + esc(m.title) + '" style="max-width:520px"><h2>' + esc(m.title) + '</h2>' + refreshErr(m.html) + '<div class="row" style="justify-content:flex-end">' + '<button class="btn ghost sm" type="button" data-a="close">Cancelar</button>' + (m.ok ? '<button class="btn sm" type="button" data-a="' + m.ok.a + '" data-v="' + esc(m.ok.v || '') + '">' + esc(m.ok.label) + '</button>' : '') + '</div></div></div>';
+    return '<div class="modal-bg" data-a="closebg"><div class="modal" role="dialog" aria-modal="true" aria-label="' + esc(m.title) + '" style="max-width:520px"><h2>' + esc(m.title) + '</h2>' + refreshErr(m.html) + '<div class="row" style="justify-content:flex-end">' + '<button class="btn ghost sm" type="button" data-a="close">' + (m.ok ? (m.ok.closeLabel || 'Cancelar') : 'Cerrar') + '</button>' + (m.ok ? '<button class="btn sm" type="button" data-a="' + m.ok.a + '" data-v="' + esc(m.ok.v || '') + '">' + esc(m.ok.label) + '</button>' : '') + '</div></div></div>';
   }
   function dlgInfo(title, html) { S.modal = { type: 'dlg', title: title, html: html, ok: null, fresh: true }; render(); }
 
@@ -285,7 +285,7 @@
     else if (g.step === 'reg1') b = '<div class="card"><h1>Crear mi cuenta</h1><p class="muted">Paso 1 de 3 · Tus datos</p>' + fld('Nombre completo', 'rg-name') + fld('Cédula', 'rg-ci', { ph: 'V-12.345.678', max: 14 }) + fld('Fecha de nacimiento', 'rg-dob', { type: 'date' }) + fld('Teléfono', 'rg-phone', { type: 'tel', mode: 'tel', ph: '04141234567', max: 11 }) + fld('Correo', 'rg-mail', { type: 'email' }) + fld('Sexo', 'rg-sex', { type: 'select', options: [{ v: 'F', l: 'Femenino' }, { v: 'M', l: 'Masculino' }] }) + errBox('rg') + '<button class="btn" type="button" data-a="rg-1">Continuar</button><button class="btn ghost sm" type="button" data-a="lg-back">Ya tengo cuenta</button></div>';
     else if (g.step === 'reg2') b = '<div class="card"><h1>Crear mi cuenta</h1><p class="muted">Paso 2 de 3 · Tu clave</p>' + fld('Clave', 'pw-new', { type: 'password' }) + '<div id="pwbox">' + meterHtml(F('pw-new')) + '</div>' + fld('Repite la clave', 'pw-new2', { type: 'password' }) + fld('Acepto los <b>términos de uso</b> y la <b>política de privacidad</b>', 'rg-terms', { type: 'checkbox' }) + errBox('rg') + '<button class="btn" type="button" data-a="rg-2">Continuar</button><button class="btn ghost sm" type="button" data-a="rg-back">Atrás</button></div>';
     else b = '<div class="card"><h1>Verifica tu teléfono</h1><p class="muted">Paso 3 de 3 · Te enviamos un código de 6 números.</p><div class="okmsg">Para la demostración, el código es 123456.</div>' + fld('Código', 'rg-code', { max: 6, mode: 'numeric', enter: 'rg-3' }) + errBox('rg') + '<button class="btn" type="button" data-a="rg-3">Crear mi cuenta</button><button class="btn ghost sm" type="button" data-a="rg-back">Atrás</button></div>';
-    return '<div class="login"><div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:16px">' + b + '</div></div>';
+    return '<div class="login"><div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:16px">' + b + '<p class="byline">BY INSANITY MEDIA LLC<sup>®</sup> · All rights reserved</p></div></div>';
   }
   function enter(acct, silent) {
     S.hub = false; S.from = null; S.sec = {}; S.docOpen = null;
@@ -312,7 +312,7 @@
 
   /* ---------- Teléfono: menú de botones, una pantalla por opción, botón atrás ---------- */
   function isMob() { return !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches); }
-  const NO_SPLIT = { 'lab/nueva': 1, 'lab/resultado': 1, 'lab/ordenes': 1, 'lab/pacientes': 1, 'doc/lista': 1 };
+  const NO_SPLIT = { 'lab/nueva': 1, 'lab/resultado': 1, 'lab/ordenes': 1, 'lab/pacientes': 1, 'doc/lista': 1, 'doc/firma': 1 };
   function secTitle(el, n) { const h = el.querySelector('h2,h3'); return h ? h.textContent.replace(/\s+/g, ' ').trim() : 'Sección ' + (n + 1); }
   function sectionize(html, key) {
     if (NO_SPLIT[key] || /\/(inicio|menu|qr)$/.test(key)) return html;

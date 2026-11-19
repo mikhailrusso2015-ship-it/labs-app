@@ -125,6 +125,7 @@
     if (mode === 'doc' && scn.tab === 'mine') body = '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">' + QRT.svg('LABS-DOC-12345', 240) + '<b>Dra. Marisol Pérez</b><span class="small muted">MPPS 12345 · LABS-DOC-12345</span><p class="small muted">Muéstrale este QR al paciente que quiera ser evaluado por ti. Él lo escanea desde su teléfono y te da acceso.</p></div>';
     else body = '<p class="small muted">' + desc + '</p><div class="scanbox"><video id="scv" playsinline muted autoplay></video><div class="scanframe"></div></div><p id="scs" class="small muted">Abriendo la cámara…</p><div class="row"><button type="button" class="btn ghost sm" data-s="cam">Abrir cámara</button><label class="btn ghost sm" style="cursor:pointer">Subir foto del QR<input type="file" accept="image/*" data-s-file hidden></label></div><h3>Demostración sin cámara</h3><p class="small muted">Elige a quién “escanear”:</p><div class="pill-row">' + demoList(mode) + '</div>';
     ov.innerHTML = '<div class="scan-in"><div class="row between"><h2>' + title + '</h2><button type="button" class="btn sm" data-s="close">Cerrar</button></div>' + tabs + body + '</div>';
+    if (window.UI_segs) window.UI_segs(ov);
     if (!(mode === 'doc' && scn.tab === 'mine')) startCam();
   }
   function startCam() {

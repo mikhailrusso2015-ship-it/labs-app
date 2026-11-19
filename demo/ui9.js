@@ -1,7 +1,7 @@
 /* LABS demo · selector de tasas desplegable + médico: exámenes por separado, repetir/pedir examen, recetar */
 (function () {
   const L = window.LABS, D = window.LABSDATA, S = window.S, U = window.UI, EXT = window.EXT, X = EXT.fn, A = EXT.actions, V = EXT.views;
-  const esc = U.esc, toast = U.toast, F = X.F, fld = X.fld, errBox = X.errBox, dlg = X.dlg, closeDlg = X.closeDlg, notify = X.notify, chipFor = U.chipFor;
+  const logAudit = U.logAudit, esc = U.esc, toast = U.toast, F = X.F, fld = X.fld, errBox = X.errBox, dlg = X.dlg, closeDlg = X.closeDlg, notify = X.notify, chipFor = U.chipFor;
   const DOC = 'Dra. Marisol Pérez';
   function render() { window.render(); }
   function pname(pid) { const d = (S.docPatients || []).filter(function (x) { return x.pid === pid; })[0]; if (d) return d.name; const p = X.personOf(pid); return p ? p.name : 'el paciente'; }
@@ -42,7 +42,7 @@
     }).join('') : '<p class="muted">Este paciente todavía no tiene resultados.</p>';
     const ords = S.docOrders.filter(function (o) { return o.pid === p.pid; }); const rxs = S.rx.filter(function (r) { return r.pid === p.pid; });
     const ordH = ords.length ? ords.slice().reverse().map(function (o) { return '<div class="vrow"><span><b>' + (o.kind === 'repetir' ? 'Repetir' : 'Hacerse') + ':</b> ' + esc(o.exams.join(', ')) + '<small class="block">' + esc(o.created) + ' · ' + esc(o.when) + '</small></span><span class="chip ' + (o.state === 'Hecho' ? 'ok' : 'warn') + '">' + o.state + '</span></div>'; }).join('') : '<p class="small muted">Todavía no le has pedido exámenes desde la app.</p>';
-    const rxH = rxs.length ? rxs.slice().reverse().map(function (r) { return '<div class="vrow"><span><b>' + esc(r.id) + '</b> · ' + r.meds.length + (r.meds.length === 1 ? ' medicamento' : ' medicamentos') + '<small class="block">' + esc(r.meds.map(function (m) { return m.name; }).join(', ')) + ' · ' + esc(r.created) + '</small></span><span class="chip ok">Enviada</span></div>'; }).join('') : '<p class="small muted">Todavía no le has recetado nada desde la app.</p>';
+    const rxH = rxs.length ? rxs.slice().reverse().map(function (r) { return '<div class="vrow"><span><b>' + esc(r.id) + '</b> · ' + r.meds.length + (r.meds.length === 1 ? ' medicamento' : ' medicamentos') + '<small class="block">' + esc(r.meds.map(function (m) { return m.name; }).join(', ')) + ' · ' + esc(r.created) + '</small></span><button class="btn ghost sm" type="button" data-a="rx-view" data-v="' + r.id + '">Ver récipe</button></div>'; }).join('') : '<p class="small muted">Todavía no le has recetado nada desde la app.</p>';
     return '<div class="deskback"><button class="btn ghost sm" type="button" data-a="docback">‹ Volver a mis pacientes</button></div>' +
       '<div class="card"><h2>' + esc(p.name) + '</h2><div class="small muted">Cédula ' + esc(p.ci) + '</div><div class="row"><span class="chip gray">' + esc(p.scope) + '</span><span class="chip gray">Acceso hasta ' + esc(p.until) + '</span></div>' +
       '<div class="btnrow"><button class="btn sm" type="button" data-a="dx-new" data-v="">Pedir un examen</button><button class="btn sm" type="button" data-a="rx-open" data-v="' + p.pid + '">Recetar tratamiento</button></div></div>' +
@@ -91,7 +91,7 @@
   function medFilled() { return F('rx-name').trim() !== ''; }
   function rxDlg() {
     const d = S.rxd.map(function (m, i) { return '<div class="vrow"><span><b>' + esc(m.name) + '</b> · ' + esc(m.dose) + '<small class="block">' + esc(m.freq) + ' · ' + esc(m.days) + (m.ins ? ' · ' + esc(m.ins) : '') + '</small></span><button type="button" class="btn rm sm" data-a="rx-rm" data-v="' + i + '" aria-label="Quitar ' + esc(m.name) + '">✕</button></div>'; }).join('');
-    dlg('Recetar tratamiento', '<p class="small muted">Para <b>' + esc(pname(S.rxPid)) + '</b>. Receta digital con tu MPPS 12345.</p>' + (d ? '<div class="small muted">En esta receta</div>' + d : '') +
+    dlg('Recetar tratamiento', '<p class="small muted">Para <b>' + esc(pname(S.rxPid)) + '</b>. El récipe sale con tu sello (MPPS 12345) y tu firma.</p>' + (S.dm.saved ? '' : '<div class="banner warn"><b>Falta tu firma y tu sello.</b> Cárgalos una sola vez y quedan guardados.<div class="btnrow"><button class="btn sm" type="button" data-a="dm-go">Cargar firma y sello</button></div></div>') + (d ? '<div class="small muted">En esta receta</div>' + d : '') +
       '<div class="small muted">' + (d ? 'Agregar otro medicamento' : 'Medicamento') + '</div>' + fld('Nombre del medicamento', 'rx-name', { ph: 'Ej.: Metformina' }) + '<div class="exgrid">' + fld('Dosis', 'rx-dose', { ph: '500 mg' }) + fld('Por cuántos días', 'rx-days', { ph: '30 días' }) + '</div>' + fld('Cada cuánto', 'rx-freq', { type: 'select', options: FREQ }) + fld('Indicación de este medicamento (opcional)', 'rx-ins', { ph: 'Ej.: Tomar con comida' }) + '<button class="btn ghost sm" type="button" data-a="rx-add">＋ Agregar a la receta</button>' +
       fld('Motivo o diagnóstico', 'rx-dx', { ph: 'Ej.: Control de glucosa' }) + fld('Indicaciones generales (opcional)', 'rx-note', { type: 'textarea', ph: 'Dieta, ejercicio, cuándo volver…' }) + errBox('rx'), { label: 'Enviar receta', a: 'rx-ok', v: '' });
   }
@@ -103,17 +103,18 @@
   A['rx-add'] = function () { pushMed(); rxDlg(); };
   A['rx-rm'] = function (v) { S.rxd.splice(parseInt(v, 10), 1); rxDlg(); };
   A['rx-ok'] = function () {
+    if (!S.dm.saved) { S.err.rx = 'Primero carga y guarda tu firma y tu sello. Sin eso el récipe no es válido.'; return rxDlg(); }
     if (medFilled() && !pushMed()) return rxDlg(); if (!S.rxd.length) { S.err.rx = 'Agrega al menos un medicamento.'; return rxDlg(); } const dx = F('rx-dx').trim(); if (dx.length < 3) { S.err.rx = 'Escribe el motivo o diagnóstico.'; return rxDlg(); }
-    const id = 'RX-' + String(++seq.r + 100).padStart(4, '0'); S.rx.push({ id: id, pid: S.rxPid, dx: dx, note: F('rx-note').trim(), meds: S.rxd.slice(), created: 'Hoy', doctor: DOC, mpps: '12345' });
-    notify('pat', DOC + ' te recetó un tratamiento (' + S.rxd.length + (S.rxd.length === 1 ? ' medicamento' : ' medicamentos') + '). Míralo en Mis recetas.', { type: 'go', ref: 'recetas' }, S.rxPid);
-    const n = S.rxd.length; S.rxd = []; ['rx-dx', 'rx-note'].forEach(function (k) { delete S.f[k]; }); S.err = {}; S.modal = null; toast('Receta enviada. ' + pfirst(S.rxPid) + ' recibió una notificación en su teléfono (' + n + (n === 1 ? ' medicamento' : ' medicamentos') + ').');
+    const id = 'RX-' + String(++seq.r + 100).padStart(4, '0'); S.rx.push({ id: id, pid: S.rxPid, dx: dx, note: F('rx-note').trim(), meds: S.rxd.slice(), created: 'Hoy', date: X.longDate(), doctor: DOC, mpps: '12345', sign: S.dm.sign, stamp: S.dm.stamp });
+    notify('pat', DOC + ' te envió un récipe firmado y sellado (' + S.rxd.length + (S.rxd.length === 1 ? ' medicamento' : ' medicamentos') + '). Míralo en Mis recetas.', { type: 'go', ref: 'recetas' }, S.rxPid);
+    const n = S.rxd.length; S.rxd = []; ['rx-dx', 'rx-note'].forEach(function (k) { delete S.f[k]; }); S.err = {}; S.modal = null; toast('Récipe enviado con tu firma y tu sello. ' + pfirst(S.rxPid) + ' recibió una notificación en su teléfono (' + n + (n === 1 ? ' medicamento' : ' medicamentos') + ').');
   };
 
   /* ---------- Paciente: Mis recetas y pedidos del médico ---------- */
   EXT.nav.pat.splice(1, 0, { id: 'recetas', label: 'Mis recetas', badge: function () { return S.rx.filter(function (r) { return r.pid === X.myPid(); }).length || ''; } });
   if (EXT.MI) EXT.MI.recetas = '<path d="m10.5 20.5-7-7a4.9 4.9 0 0 1 7-7l7 7a4.9 4.9 0 0 1-7 7z"/><path d="m8.5 8.5 7 7"/>';
   function rxCard(r) {
-    return '<div class="card"><div class="row between"><div><h2>' + esc(r.id) + ' · ' + esc(r.dx) + '</h2><p class="small muted">' + esc(r.doctor) + ' · MPPS ' + esc(r.mpps) + ' · ' + esc(r.created) + '</p></div></div>' + r.meds.map(function (m) { return '<div class="vrow"><span><b>' + esc(m.name) + '</b> · ' + esc(m.dose) + '<small class="block">' + esc(m.freq) + ' · ' + esc(m.days) + (m.ins ? ' · ' + esc(m.ins) : '') + '</small></span></div>'; }).join('') + (r.note ? '<div class="kv"><small>Indicaciones generales</small><b>' + esc(r.note) + '</b></div>' : '') + '<div class="row"><button class="btn ghost sm" type="button" data-a="rx-print">Imprimir receta</button></div></div>';
+    return '<div class="card"><div class="row between"><div><h2>' + esc(r.id) + ' · ' + esc(r.dx) + '</h2><p class="small muted">' + esc(r.doctor) + ' · MPPS ' + esc(r.mpps) + ' · ' + esc(r.created) + '</p></div></div>' + r.meds.map(function (m) { return '<div class="vrow"><span><b>' + esc(m.name) + '</b> · ' + esc(m.dose) + '<small class="block">' + esc(m.freq) + ' · ' + esc(m.days) + (m.ins ? ' · ' + esc(m.ins) : '') + '</small></span></div>'; }).join('') + (r.note ? '<div class="kv"><small>Indicaciones generales</small><b>' + esc(r.note) + '</b></div>' : '') + '<div class="row"><button class="btn sm" type="button" data-a="rx-view" data-v="' + r.id + '">Ver récipe con firma y sello</button></div></div>';
   }
   A['rx-print'] = function () { try { window.print(); } catch (e) { toast('Aquí no se puede imprimir. En la app real se imprime o se guarda en PDF.'); } };
   V.pat.recetas = function () {
@@ -172,5 +173,90 @@
   const nav0 = A['nav']; A['nav'] = function (v, el) { S.pcOpen = null; return nav0(v, el); };
   const pcnew0 = A['pc-new']; A['pc-new'] = function (v) { S.pcOpen = null; return pcnew0(v); };
   const del0 = A['pc-del-ok']; A['pc-del-ok'] = function (v) { S.pcOpen = null; return del0(v); };
+
+  /* ---------- Firma y sello del médico + récipe ---------- */
+  S.dm = { sign: '', stamp: '', over: '', msg: '', own: false, saved: false };
+  function doctorSample() {
+    const w = 1000, h = 680; const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+    const bg = g.createLinearGradient(0, 0, w, h); bg.addColorStop(0, '#f7f5ef'); bg.addColorStop(1, '#e4e1d8'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    let sd = 7; function rn() { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; }
+    for (let i = 0; i < 2500; i++) { g.fillStyle = 'rgba(80,70,50,' + (rn() * 0.05).toFixed(3) + ')'; g.fillRect(rn() * w, rn() * h, 2, 2); }
+    g.save(); g.translate(120, 380); g.strokeStyle = '#1b2a66'; g.lineWidth = 5; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(0, 50); g.bezierCurveTo(40, -70, 70, 110, 110, 0); g.bezierCurveTo(140, -50, 150, 100, 200, 40); g.bezierCurveTo(240, -10, 280, 90, 330, 30); g.bezierCurveTo(350, 10, 380, 50, 400, 25); g.stroke();
+    g.lineWidth = 3; g.beginPath(); g.moveTo(20, 95); g.bezierCurveTo(130, 70, 250, 115, 390, 65); g.stroke(); g.restore();
+    g.save(); g.translate(790, 330); g.rotate(-0.1); const ink = '#4b2e9c'; g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = 6; g.beginPath(); g.arc(0, 0, 130, 0, 7); g.stroke(); g.lineWidth = 2.5; g.beginPath(); g.arc(0, 0, 118, 0, 7); g.stroke();
+    g.font = '700 20px Poppins, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; const t = 'DRA. MARISOL PÉREZ · MÉDICO CIRUJANO · '; const rad = 94;
+    for (let i = 0; i < t.length; i++) { const a = (i / t.length) * Math.PI * 2 - Math.PI / 2; g.save(); g.rotate(a); g.translate(0, -rad); g.fillText(t[i], 0, 0); g.restore(); }
+    g.font = '700 20px Poppins, sans-serif'; g.fillText('MPPS', 0, -12); g.font = '700 22px Poppins, sans-serif'; g.fillText('N.º 12345', 0, 18); g.restore();
+    for (let i = 0; i < 260; i++) { g.fillStyle = 'rgba(240,238,230,' + (0.5 + rn() * 0.4).toFixed(2) + ')'; g.beginPath(); g.arc(660 + rn() * 260, 200 + rn() * 260, rn() * 2.2, 0, 7); g.fill(); }
+    const sh = g.createRadialGradient(w * 0.2, h * 0.1, 50, w * 0.5, h * 0.5, w * 0.8); sh.addColorStop(0, 'rgba(255,255,255,0.12)'); sh.addColorStop(1, 'rgba(0,0,0,0.16)'); g.fillStyle = sh; g.fillRect(0, 0, w, h);
+    return c;
+  }
+  function setDm(e) { S.dm.sign = e.sign ? e.sign.toDataURL() : ''; S.dm.stamp = e.stamp ? e.stamp.toDataURL() : ''; S.dm.over = e.overlay.toDataURL('image/jpeg', 0.8); }
+  function dmMsg(e) { return e.sign && e.stamp ? 'Detectó la firma y el sello.' : e.sign ? 'Detectó la firma, pero no el sello. Prueba otra foto con el sello más separado.' : e.stamp ? 'Detectó el sello, pero no la firma. Prueba otra foto con la firma más separada.' : 'No detectó ni firma ni sello. Usa una hoja blanca, buena luz y firma y sello sin tocarse.'; }
+  try { setDm(L.extract(doctorSample())); S.dm.own = true; S.dm.saved = true; S.dm.msg = 'Hoja de ejemplo cargada. Detectó la firma y el sello.'; } catch (e) { S.dm.msg = 'No se pudo cargar la hoja de ejemplo.'; }
+
+  function recetaSheet(r, bar) {
+    const code = L.docCode(r.id, r.date || ''); const pp = r.pid ? X.personOf(r.pid) : null;
+    const meds = r.meds.map(function (m, i) { return '<div style="padding:8px 0;border-top:1px solid #d7dcf0"><b>' + (i + 1) + '. ' + esc(m.name) + '</b> · ' + esc(m.dose) + '<div>' + esc(m.freq) + ' · ' + esc(m.days) + (m.ins ? ' · ' + esc(m.ins) : '') + '</div></div>'; }).join('');
+    const sig = r.sign ? '<img class="sign" src="' + r.sign + '" alt="Firma del médico" style="left:0;top:34px;max-width:150px;max-height:70px">' : '';
+    const stp = r.stamp ? '<img class="stamp" src="' + r.stamp + '" alt="Sello del médico" style="left:120px;top:-6px;max-width:120px;max-height:120px;mix-blend-mode:multiply">' : '';
+    return (bar ? '<div class="row between sheetbar"><span class="small muted">Hoja tamaño carta</span><button class="btn ghost sm" type="button" data-a="pz">' + (S.pz === 'big' ? 'Ver hoja completa' : 'Acercar') + '</button></div>' : '') +
+      '<div class="paper-fit"><div class="sheet"><div class="row between" style="border-bottom:2px solid #14193A;padding-bottom:10px"><div><b style="font-size:17px">' + esc(r.doctor) + '</b><div>Médico · MPPS ' + esc(r.mpps) + '</div></div><div style="text-align:right"><b style="font-size:18px">Récipe médico</b><div>N.º ' + esc(r.id) + '</div><div>' + esc(r.date || '') + '</div></div></div>' +
+      '<div><b>Paciente:</b> ' + esc(pp ? pp.name : r.patient || '—') + (pp ? ' · ' + esc(X.maskCi(pp.ci)) : '') + '</div><div><b>Diagnóstico o motivo:</b> ' + esc(r.dx) + '</div>' +
+      '<div><b style="font-size:20px">Rp/</b>' + meds + '</div>' + (r.note ? '<div><b>Indicaciones generales:</b> ' + esc(r.note) + '</div>' : '') +
+      '<div class="foot"><div><div class="sig">' + sig + stp + '</div><div style="border-top:1px solid #14193A;padding-top:4px;width:250px">' + esc(r.doctor) + '<br>Médico · MPPS ' + esc(r.mpps) + '</div></div><div style="text-align:center">' + L.qrSvg(code, 92) + '<div style="font-size:11px">' + code + '</div><div style="font-size:11px">QR de verificación (ejemplo)</div></div></div>' +
+      '<p style="font-size:11px;color:#3A4470">Récipe digital emitido desde LABS con la firma y el sello del médico. Se verifica con el código QR. Para usarlo en la farmacia, preséntalo en tu teléfono o impreso.</p></div></div>';
+  }
+  const SAMPLE_RX = { id: 'RX-0000', pid: 'p1', dx: 'Control de glucosa', note: 'Dieta baja en azúcar. Volver en 30 días con nuevos exámenes.', date: '', doctor: DOC, mpps: '12345', meds: [{ name: 'Metformina', dose: '500 mg', freq: 'Cada 12 horas', days: '30 días', ins: 'Tomar con comida' }] };
+  function findRx(id) { return S.rx.filter(function (r) { return r.id === id; })[0]; }
+  A['rx-view'] = function (v) { const r = findRx(v); if (!r) return; dlg('Récipe ' + r.id, recetaSheet(r, false), { label: 'Imprimir o guardar PDF', a: 'rx-print', closeLabel: 'Cerrar' }); };
+  A['dm-go'] = function () { S.modal = null; S.doc = 'firma'; S.docOpen = null; render(); window.scrollTo(0, 0); };
+
+  EXT.nav.doc.splice(Math.max(1, EXT.nav.doc.map(function (n) { return n.id; }).indexOf('lista') + 1), 0, { id: 'firma', label: 'Firma y sello' });
+  V.doc.firma = function () {
+    const d = S.dm; const has = !!d.sign || !!d.stamp; const pv = Object.assign({}, SAMPLE_RX, { date: X.longDate(), sign: d.sign, stamp: d.stamp });
+    return '<div class="head"><div><h1>Firma y sello</h1><p>Fotografía una hoja con tu firma y tu sello (con tu número MPPS), separados. LABS los detecta y los copia igual. Los cargas una sola vez.</p></div></div>' +
+      '<div class="card"><h2>1. Sube la foto</h2><div class="drop"><p>Una hoja blanca, buena luz, con la firma y el sello sin tocarse.</p><div class="row" style="justify-content:center"><label class="btn" style="display:inline-flex;align-items:center;cursor:pointer">Subir foto<input type="file" accept="image/jpeg,image/png" data-c="dfile" class="sr"></label><button class="btn ghost" type="button" data-a="dm-sample">Probar con una hoja de ejemplo</button></div><p class="small muted">La foto se procesa en tu navegador. En la versión real se guarda cifrada y solo la puedes subir tú.</p></div>' + (d.msg ? '<p class="small" role="status"><b>' + esc(d.msg) + '</b></p>' : '') + '</div>' +
+      '<div class="card"><h2>2. Lo que detectó</h2>' + (d.over ? '<img src="' + d.over + '" alt="Foto con la firma y el sello marcados" style="width:100%;border-radius:14px">' : '<p class="muted">Aquí aparece tu foto con la firma y el sello marcados.</p>') + '</div>' +
+      '<div class="card"><h2>3. Revisa y guarda</h2><div class="grid"><div><b class="small">Firma</b><div class="check">' + (d.sign ? '<img src="' + d.sign + '" alt="Firma recortada">' : '<span class="small muted">No detectada</span>') + '</div></div><div><b class="small">Sello</b><div class="check">' + (d.stamp ? '<img src="' + d.stamp + '" alt="Sello recortado">' : '<span class="small muted">No detectado</span>') + '</div></div></div>' +
+      '<div class="row"><button class="btn ghost sm" type="button" data-a="dm-swap">Intercambiar firma y sello</button></div>' +
+      '<label class="row small" style="cursor:pointer"><input type="checkbox" data-c="dm-own" ' + (d.own ? 'checked' : '') + ' style="width:22px;height:22px"> Soy el médico (MPPS 12345) y esta es mi firma y mi sello.</label>' +
+      '<button class="btn" type="button" data-a="dm-save" ' + (has && d.own ? '' : 'disabled') + '>Guardar firma y sello</button>' + (d.saved && has && d.own ? '<p class="small up"><b>Guardado.</b> Se estampan solo cuando tú envías un récipe.</p>' : '') + '</div>' +
+      '<div class="card"><h2>Así sale tu récipe</h2>' + recetaSheet(pv, true) + '</div>' +
+      '<div class="card note"><h2>Cómo se cuida tu firma</h2><ul class="clean small"><li>No se puede descargar ni copiar desde el sistema.</li><li>Se estampa solo cuando tú envías un récipe.</li><li>Cada récipe queda con su número y su código QR de verificación.</li><li>Si cambias tu firma, los récipes ya enviados conservan la que tenían.</li></ul></div>';
+  };
+  A['dm-sample'] = function () { try { const e = L.extract(doctorSample()); setDm(e); S.dm.msg = 'Hoja de ejemplo cargada. ' + dmMsg(e); S.dm.own = false; S.dm.saved = false; } catch (er) { S.dm.msg = 'No se pudo usar la hoja de ejemplo.'; } render(); };
+  A['dm-swap'] = function () { const x = S.dm.sign; S.dm.sign = S.dm.stamp; S.dm.stamp = x; S.dm.saved = false; render(); };
+  A['dm-save'] = function () { S.dm.saved = true; logAudit(DOC, 'El médico actualizó su firma y su sello'); toast('Firma y sello guardados. Solo se estampan al enviar un récipe.'); render(); };
+  document.addEventListener('change', function (ev) {
+    const t = ev.target; const c = t.getAttribute && t.getAttribute('data-c');
+    if (c === 'dm-own') { S.dm.own = t.checked; render(); return; }
+    if (c === 'dfile') { const f = t.files && t.files[0]; if (!f) return; S.dm.msg = 'Procesando la foto…'; render(); L.loadImageFromFile(f, 1400).then(function (cv) { const e = L.extract(cv); setDm(e); S.dm.msg = dmMsg(e); S.dm.own = false; S.dm.saved = false; render(); }).catch(function () { S.dm.msg = 'No se pudo abrir esa imagen. Usa una foto JPG o PNG.'; render(); }); }
+  });
+
+  /* ---------- Teléfono: todo selector de pestañas pasa a ser una pestañita desplegable ---------- */
+  window.UI_segs = function (root) {
+    if (!root || !window.matchMedia('(max-width: 760px)').matches) return;
+    Array.prototype.forEach.call(root.querySelectorAll('.seg'), function (seg) {
+      const btns = Array.prototype.slice.call(seg.querySelectorAll('button')); if (!btns.length) return;
+      const cur = btns.filter(function (b) { return b.getAttribute('aria-pressed') === 'true'; })[0] || btns[0];
+      const wrap = document.createElement('div'); wrap.className = 'per segdd';
+      const top = document.createElement('button'); top.type = 'button'; top.className = 'perbtn segbtn'; top.setAttribute('aria-haspopup', 'listbox'); top.setAttribute('aria-expanded', 'false');
+      top.innerHTML = '<span>Ver: ' + esc(cur.textContent.trim()) + '</span><i class="chev" aria-hidden="true">›</i>';
+      const menu = document.createElement('div'); menu.className = 'permenu l'; menu.setAttribute('role', 'listbox'); menu.hidden = true; if (seg.getAttribute('aria-label')) menu.setAttribute('aria-label', seg.getAttribute('aria-label'));
+      btns.forEach(function (b) { const o = b.cloneNode(true); const on = b === cur; o.className = 'peropt segopt'; o.setAttribute('role', 'option'); o.setAttribute('aria-selected', String(on)); o.removeAttribute('aria-pressed'); o.removeAttribute('data-c'); o.innerHTML = '<span>' + esc(b.textContent.trim()) + '</span>' + (on ? '<b>✓</b>' : ''); menu.appendChild(o); });
+      wrap.appendChild(top); wrap.appendChild(menu); seg.parentNode.replaceChild(wrap, seg);
+    });
+  };
+  document.addEventListener('click', function (ev) {
+    const tb = ev.target.closest && ev.target.closest('.segbtn');
+    document.querySelectorAll('.segdd').forEach(function (w) { const m = w.querySelector('.permenu'), b = w.querySelector('.segbtn'); if (tb && tb === b) { m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); b.querySelector('.chev').classList.toggle('open', !m.hidden); } else { m.hidden = true; b.setAttribute('aria-expanded', 'false'); b.querySelector('.chev').classList.remove('open'); } });
+  }, true);
+  const post0 = window.UI_post; window.UI_post = function () { if (post0) post0(); window.UI_segs(document.getElementById('app')); };
+
+  /* ---------- Pie de autor ---------- */
+  const BYLINE = '<p class="byline">BY INSANITY MEDIA LLC<sup>®</sup> · All rights reserved</p>';
+  [[V.lab, 'config'], [V.lab, 'suscripcion'], [EXT.views.adm, 'ajustes']].forEach(function (x) { const f0 = x[0][x[1]]; if (f0) x[0][x[1]] = function () { return f0() + BYLINE; }; });
   render();
 })();

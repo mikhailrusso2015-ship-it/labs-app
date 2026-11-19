@@ -356,9 +356,33 @@
 
   /* Laboratorio: QR para imprimir y pegar */
   const code = function () { return 'LABS-LAB-' + S.labs[0].id.toUpperCase(); };
+  /* Cartel del laboratorio: mismo diseño del manual de marca (A4). El nombre y el QR cambian en cada laboratorio. */
+  function posterSvg(name, cd) {
+    const nm = String(name || 'Tu laboratorio').toUpperCase(); const ns = nm.length > 34 ? 18 : nm.length > 26 ? 22 : 26;
+    const steps = [['1', 'Elige tus', 'exámenes'], ['2', 'Mira cuánto', 'cuesta'], ['3', 'Paga y sube tu', 'comprobante'], ['4', 'Dile a caja tu', 'nombre y cédula']];
+    const x0 = (1240 - 4 * 270) / 2; const sy = 1470;
+    const st = steps.map(function (s, i) { const cx = x0 + i * 270 + 135; return '<circle cx="' + cx + '" cy="' + (sy + 34) + '" r="34" fill="#4C5FD5"/><text x="' + cx + '" y="' + (sy + 46) + '" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">' + s[0] + '</text><text x="' + cx + '" y="' + (sy + 104) + '" font-size="26" font-weight="500" fill="#3A4470" text-anchor="middle">' + s[1] + '</text><text x="' + cx + '" y="' + (sy + 138) + '" font-size="28" font-weight="700" fill="#14193A" text-anchor="middle">' + s[2] + '</text>'; }).join('');
+    const qd = window.QRT ? window.QRT.path(cd, 370, 670, 500) : '';
+    return '<svg class="qpost" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1754" role="img" aria-label="Cartel con el QR del laboratorio" font-family="Poppins, Arial, sans-serif">' +
+      '<defs><linearGradient id="qph" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5668E0"/><stop offset=".6" stop-color="#3345B5"/><stop offset="1" stop-color="#2A2A9C"/></linearGradient>' +
+      '<filter id="qps" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="26"/><feOffset dy="24" result="o"/><feFlood flood-color="#1D2459" flood-opacity=".38"/><feComposite in2="o" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+      '<clipPath id="qpc"><path d="M0 0H1240V820Q620 900 0 820Z"/></clipPath></defs>' +
+      '<rect width="1240" height="1754" fill="#EEF1FF"/><path d="M0 0H1240V820Q620 900 0 820Z" fill="url(#qph)"/>' +
+      '<g clip-path="url(#qpc)"><circle cx="1130" cy="120" r="330" fill="#fff" opacity=".07"/><circle cx="1180" cy="620" r="170" fill="#fff" opacity=".06"/><circle cx="60" cy="700" r="240" fill="#5B3BD6" opacity=".35"/></g>' +
+      '<image href="brand/logo-rev.svg" x="90" y="86" width="196" height="64"/>' +
+      '<text x="90" y="224" font-size="' + ns + '" font-weight="500" fill="#DDE3FB" letter-spacing="6">' + esc(nm) + '</text>' +
+      '<text x="90" y="330" font-size="86" font-weight="700" fill="#fff">Adelanta tu orden</text><text x="90" y="424" font-size="86" font-weight="700" fill="#fff">desde tu teléfono</text>' +
+      '<text x="90" y="490" font-size="32" font-weight="500" fill="#DDE3FB">Elige tus exámenes, mira el precio, paga y</text><text x="90" y="534" font-size="32" font-weight="500" fill="#DDE3FB">espera solo a que te llamen para tu muestra.</text>' +
+      '<g filter="url(#qps)"><rect x="290" y="600" width="660" height="730" rx="60" fill="#fff"/></g><path d="' + qd + '" fill="#14193A" shape-rendering="crispEdges"/>' +
+      '<rect x="380" y="1230" width="480" height="64" rx="32" fill="#5B3BD6"/><text x="620" y="1272" font-size="23" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="2">ESCANEA CON LA CÁMARA</text>' +
+      '<text x="620" y="1392" font-size="24" font-weight="500" fill="#3A4470" text-anchor="middle">Funciona con cualquier teléfono, sin instalar nada</text>' +
+      '<line x1="' + (x0 + 169) + '" y1="' + (sy + 34) + '" x2="' + (x0 + 3 * 270 + 101) + '" y2="' + (sy + 34) + '" stroke="#9DB4F0" stroke-width="4" stroke-dasharray="2 12" stroke-linecap="round"/>' + st +
+      '<rect x="0" y="1628" width="1240" height="126" fill="#E6EAFF"/><text x="90" y="1682" font-size="22" font-weight="500" fill="#3A4470">Hecho con</text><image href="brand/logo-color.svg" x="230" y="1652" width="166" height="54"/>' +
+      '<text x="1150" y="1674" font-size="24" font-weight="700" fill="#14193A" text-anchor="end">by Insanity Media LLC</text><text x="1150" y="1699" font-size="19" font-weight="500" fill="#3A4470" text-anchor="end">© All Rights Reserved</text></svg>';
+  }
   V.lab.qrlab = function () {
     const lab = S.labs[0]; const n = S.orders.filter(function (o) { return o.via === QRL; }).length; const pend = S.orders.filter(function (o) { return o.via === QRL && !o.paid && o.status !== 'Anulada'; }).length;
-    const poster = '<div class="paper-fit"><div class="sheet" style="align-items:center;text-align:center"><div style="font-size:34px;font-weight:800;line-height:1.1">' + esc(lab.name) + '</div><div style="font-size:22px;color:#3A4470">Adelanta tu orden desde tu teléfono</div>' + (window.QRT ? window.QRT.svg(code(), 420) : '') + '<div style="font-size:26px;font-weight:700">Escanea este QR con la cámara</div>' +
+    const poster = '<div class="qposter">' + posterSvg(lab.name, code()) + '</div>';
       '<div style="text-align:left;font-size:20px;line-height:1.7"><div><b>1.</b> Elige tus exámenes</div><div><b>2.</b> Mira cuánto cuesta</div><div><b>3.</b> Paga y sube tu comprobante</div><div><b>4.</b> Dile a la persona de caja tu nombre y tu cédula. Espera que te llamen para tomar tu muestra</div></div><div style="margin-top:auto;font-size:14px;color:#3A4470">' + esc(code()) + ' · Hecho con LABS</div></div></div>';
     return '<div class="head"><div><h1>QR para tus pacientes</h1><p>Imprímelo y pégalo en tu local. Tus pacientes lo escanean y adelantan su orden mientras esperan.</p></div></div>' +
       '<div class="card"><h2>Cómo funciona</h2><ul class="clean small"><li>El paciente escanea, elige sus exámenes, ve el precio, paga y sube su comprobante.</li><li>Te llega a <b>Atender pacientes → Cobrar la orden</b>. Búscalo por cédula, mira su comprobante y confirma el pago.</li><li>Después solo falta tomar la muestra. Menos fila y menos espera.</li></ul>' +

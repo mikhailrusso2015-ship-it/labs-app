@@ -43,6 +43,18 @@
   const first = function (n) { return String(n || '').split(' (')[0]; };
   function ordersByState() { const o = S.orders; return [{ l: 'Esperando al paciente', v: o.filter(function (x) { return x.status === 'Esperando paciente'; }).length, c: C[1] }, { l: 'Por cargar resultados', v: o.filter(function (x) { return x.status === 'Por procesar' || x.status === 'En proceso'; }).length, c: C[0] }, { l: 'Enviadas', v: o.filter(function (x) { return x.status === 'Enviada'; }).length, c: C[2] }]; }
 
+  /* ---------- Selector de período: una pestañita que se despliega ---------- */
+  function periodPicker() {
+    const cur = L.PERIODS.find(function (x) { return x.id === S.period; }) || L.PERIODS[0]; const o = !!S.perOpen;
+    return '<div class="per"><button type="button" class="perbtn" data-a="per-toggle" aria-haspopup="listbox" aria-expanded="' + o + '"><span>' + esc(cur.label) + '</span><i class="chev' + (o ? ' open' : '') + '" aria-hidden="true">›</i></button>' +
+      (o ? '<div class="permenu" role="listbox" aria-label="Período">' + L.PERIODS.map(function (x) { return '<button type="button" role="option" class="peropt" data-a="per-pick" data-v="' + x.id + '" aria-selected="' + (x.id === cur.id) + '"><span>' + esc(x.label) + '</span>' + (x.id === cur.id ? '<b>✓</b>' : '') + '</button>'; }).join('') + '</div>' : '') + '</div>';
+  }
+  A['per-toggle'] = function () { S.perOpen = !S.perOpen; window.render(); };
+  A['per-pick'] = function (v) { S.period = v; S.perOpen = false; window.render(); };
+  document.addEventListener('click', function (ev) { if (S.perOpen && !ev.target.closest('.per')) { S.perOpen = false; window.render(); } });
+  const SEG_RE = /<div class="seg" role="group" aria-label="Período">[\s\S]*?<\/div>/;
+  const res0 = V.lab.resumen; V.lab.resumen = function () { return res0().replace(SEG_RE, periodPicker()); };
+
   /* ---------- Laboratorio / Recepción ---------- */
   V.lab.inicio = function () {
     const recep = S.auth && S.auth.sub === 'recep'; const st = ordersByState(); const tot = S.orders.filter(function (o) { return o.status !== 'Anulada'; }).length;
@@ -54,7 +66,7 @@
     const p = L.PERIODS.find(function (x) { return x.id === S.period; }) || L.PERIODS[0]; const cur = L.periodStats(p.days, 0), prev = L.periodStats(p.days, p.days); const mo = L.monthly().slice(-6); const top = L.topExams(p.days).slice(0, 5); const lab = S.labs[0];
     const warn = lab.due <= 7 ? '<div class="banner" role="status">Tu suscripción vence en ' + lab.due + ' días. <button class="btn ghost sm" type="button" data-a="nav" data-v="config">Ir a Configuración</button></div>' : '';
     return warn + hero('Hola, ' + first(S.auth.name), lab.name + ' · cifras de ejemplo', acts) +
-      '<div class="seg" role="group" aria-label="Período">' + L.PERIODS.map(function (x) { return '<button type="button" data-a="period" data-v="' + x.id + '" aria-pressed="' + (S.period === x.id) + '">' + x.label + '</button>'; }).join('') + '</div>' +
+      '<div class="perrow"><b>Resumen</b>' + periodPicker() + '</div>' +
       '<div class="grid">' + kpi('Exámenes hechos', L.fmtInt(cur.n), delta(cur.n, prev.n), 'reportes') + kpi('Facturado', L.fmtUsd(cur.usd), delta(cur.usd, prev.usd), 'reportes') + kpi('Ganancia estimada', L.fmtUsd(cur.margin), cur.usd ? Math.round(cur.margin / cur.usd * 100) + ' % de lo facturado' : '', 'reportes') + kpi('Por cobrar', L.fmtUsd(cur.pending), 'órdenes sin pago', 'ordenes') + '</div>' +
       chartCard('Ventas y costos por mes', 'En dólares, últimos 6 meses.', vbars(mo.map(function (m) { return { l: m.label, a: m.usd, b: m.cost }; }), ['Ventas', 'Costos'], L.fmtUsd)) +
       '<div class="grid two">' + chartCard('Órdenes ahora mismo', 'Toca “Órdenes” para atenderlas.', donut(st, String(tot), 'órdenes')) + chartCard('Exámenes más pedidos', p.label.toLowerCase(), top.length ? U.hbars(top, top[0].n, L.fmtInt) : '<p class="muted">Todavía no hay órdenes en este período.</p>') + '</div>';

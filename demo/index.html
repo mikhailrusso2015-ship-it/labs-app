@@ -239,6 +239,14 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 @media (max-width: 760px) { .btn { font-size: 14px; padding: 0 16px; } .btn.sm { font-size: 13px; padding: 0 12px; min-height: 36px; } .acch .t { font-size: 15px; } }
 
 @media (max-width: 760px) { .seg { padding: 4px; gap: 2px; flex-wrap: nowrap; overflow-x: auto; } .seg button { padding: 0 11px; font-size: 13px; white-space: nowrap; min-height: 38px; } }
+
+/* ---- Selector de período (pestañita desplegable) ---- */
+.perrow { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; } .perrow b { font-size: 16px; }
+.per { position: relative; display: inline-block; }
+.perbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px 0 14px; border: 0; border-radius: 12px; background: rgba(255,255,255,.55); color: var(--link); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; backdrop-filter: blur(6px); }
+.perbtn .chev { font-size: 18px; transform: rotate(90deg); } .perbtn .chev.open { transform: rotate(-90deg); }
+.permenu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 170px; background: #fff; border-radius: 16px; padding: 6px; box-shadow: 0 14px 34px rgba(20,25,58,.28); display: flex; flex-direction: column; }
+.peropt { display: flex; justify-content: space-between; align-items: center; min-height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: none; font: inherit; font-size: 14px; color: #1D2459; cursor: pointer; text-align: left; } .peropt:hover { background: #EEF1FF; } .peropt[aria-selected="true"] { background: #E6EAFF; font-weight: 700; color: var(--link); }
 </style>
 </head>
 <body>

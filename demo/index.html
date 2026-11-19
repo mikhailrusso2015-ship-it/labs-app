@@ -87,8 +87,13 @@ th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; p
 .rbar .zone { position: absolute; top: 0; bottom: 0; background: rgba(76,95,213,0.28); border-radius: 7px; }
 .rbar .dot { position: absolute; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
 .rbar .tick { position: absolute; top: 18px; font-size: 11px; color: var(--muted); transform: translateX(-50%); }
-.sheet { background: #fff; color: #14193A; border-radius: 6px; padding: 28px; box-shadow: 0 8px 30px rgba(20,25,58,.2); display: flex; flex-direction: column; gap: 14px; font-size: 13px; }
-.sheet table { min-width: 0; font-size: 13px; }
+.sheet { background: #fff; color: #14193A; border-radius: 4px; width: 816px; min-height: 1056px; padding: 64px 68px; box-shadow: 0 8px 30px rgba(20,25,58,.25); display: flex; flex-direction: column; gap: 18px; font-size: 15px; line-height: 1.5; }
+.sheet table { min-width: 0; font-size: 15px; width: 100%; }
+.sheet th, .sheet td { padding: 9px 10px; }
+.sheet .foot { margin-top: auto; }
+.paper-fit { width: 100%; overflow: hidden; border-radius: 4px; box-shadow: 0 10px 28px rgba(20,25,58,.28); background: #fff; }
+.paper-fit .sheet { box-shadow: none; }
+.sheetbar { margin-bottom: 4px; }
 .sheet .foot { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end; }
 .sheet .sig { position: relative; width: 250px; height: 120px; }
 .sheet .sig img { position: absolute; }
@@ -100,13 +105,73 @@ ul.clean { margin: 0; padding-left: 20px; display: flex; flex-direction: column;
 @media (max-width: 760px) { .side { max-width: none; position: static; flex-direction: row; flex-wrap: wrap; } .side .who { flex: 1 1 100%; } .demo-tag { margin-left: 0; } h1 { font-size: 24px; } }
 @media print { body { background: #fff; } body * { visibility: hidden; } .sheet, .sheet * { visibility: visible; } .sheet { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+
+.demo-tag { margin-left: 0; }
+.sep { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; opacity: .75; padding: 12px 12px 2px; }
+.login { min-height: calc(100vh - 80px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.login .card { width: 100%; max-width: 440px; }
+.meter { display: flex; gap: 4px; } .meter i { flex: 1; height: 6px; border-radius: 3px; background: #D5DAF0; } .meter i.on1 { background: #B3261E; } .meter i.on2 { background: #B45309; } .meter i.on3 { background: #4C5FD5; }
+.err { color: var(--crit-ink); background: var(--crit-bg); border-radius: 12px; padding: 8px 12px; font-size: 13px; }
+.okmsg { color: var(--ok-ink); background: var(--ok-bg); border-radius: 12px; padding: 8px 12px; font-size: 13px; }
+.thread { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; padding: 4px; }
+.bub { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 14px; background: #fff; align-self: flex-start; box-shadow: 0 2px 8px rgba(56,72,170,.12); }
+.bub.me { align-self: flex-end; background: linear-gradient(135deg, #5668E0, #3F51C9); color: #fff; }
+.bub small { display: block; opacity: .7; font-size: 11px; margin-top: 2px; }
+details.acc { background: rgba(255,255,255,0.7); border-radius: 16px; padding: 0 14px; } details.acc summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; } details.acc[open] { padding-bottom: 12px; }
+.banner { background: var(--warn-bg); color: var(--warn-ink); border-radius: 16px; padding: 10px 16px; font-weight: 600; font-size: 14px; }
+.iconbtn { position: relative; min-width: 44px; min-height: 44px; border-radius: 22px; border: 0; background: rgba(76,95,213,0.1); cursor: pointer; font-weight: 600; color: var(--link); padding: 0 14px; }
+.iconbtn .badge { position: absolute; top: 2px; right: 2px; }
+input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], input[type=tel], select, textarea { min-height: 44px; border-radius: 14px; border: 1px solid var(--line); padding: 8px 12px; background: rgba(255,255,255,0.85); width: 100%; }
+textarea { min-height: 88px; }
+.stat-ok { color: var(--ok-ink); }
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.err[hidden]{display:none!important}
+#toast-host{pointer-events:none}
+.card,.main,.tw{min-width:0;max-width:100%}
+.tw{position:relative}
+
+/* ---- Selector de periodo con sombra para que no se pierda con el fondo ---- */
+.seg { background: #fff; box-shadow: 0 6px 18px rgba(51,69,181,.30), 0 1px 3px rgba(20,25,58,.18), inset 0 0 0 1px rgba(76,95,213,.25); }
+.seg button { color: var(--link); }
+/* ---- Teléfono: menú de botones compactos, una pantalla por opción ---- */
+.hub { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.hubsep { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 4px 0; }
+.tile { min-height: 50px; border: 0; border-radius: 18px; padding: 10px 14px; text-align: left; background: #fff; color: var(--link); font-weight: 600; font-size: 14px; line-height: 1.25; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; box-shadow: 0 6px 16px rgba(51,69,181,.18), inset 0 0 0 1px rgba(255,255,255,.9); }
+.tile:active { transform: scale(.98); }
+.tile .badge { font-style: normal; flex: none; }
+.hubhead { padding: 14px 16px; gap: 2px; } .hubhead small { color: #E4E9FF; }
+.backbar { display: flex; align-items: center; gap: 10px; } .backbar b { font-size: 17px; }
+.secs { display: flex; flex-direction: column; gap: 8px; }
+.secbtn { min-height: 52px; border: 0; border-radius: 16px; padding: 10px 14px; background: #fff; color: var(--ink); font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 4px 12px rgba(51,69,181,.14); }
+.secbtn i { font-style: normal; font-size: 22px; color: var(--primary); }
+@media (max-width: 760px) {
+  .top { position: static; }
+  .top-in { padding: 6px 10px; gap: 6px; }
+  .brand { font-size: 17px; margin-right: 0; } .brand i { width: 28px; height: 28px; }
+  .roles { order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; padding: 3px; }
+  .roles button { min-height: 34px; padding: 0 12px; font-size: 13px; white-space: nowrap; }
+  #topright { gap: 6px; } #topright .nm { display: none; }
+  .iconbtn { min-height: 36px; padding: 0 12px; font-size: 13px; }
+  .shell { padding: 10px; gap: 10px; } .main { gap: 10px; flex-basis: 100%; }
+  .card { padding: 14px; border-radius: 20px; gap: 10px; }
+  .grid { gap: 10px; } .grid.two { grid-template-columns: 1fr; }
+  .grid:has(.kpi) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi b { font-size: 22px; } .kpi small { font-size: 12px; }
+  h1 { font-size: 22px; } h2 { font-size: 16px; }
+  .head { gap: 6px; } .head p { font-size: 13px; }
+  .seg button { min-height: 36px; padding: 0 12px; font-size: 14px; }
+  .deskback { display: none; }
+  .modal { padding: 12px; border-radius: 20px; } .modal-bg { padding: 10px 8px; }
+}
+@media (min-width: 761px) { .backbar { display: none; } }
+@media print { .paper-fit { box-shadow: none; height: auto !important; overflow: visible !important; } .paper-fit .sheet { transform: none !important; width: 100%; min-height: 0; } .sheetbar { display: none; } }
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
   <div class="brand"><i aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 3C12 3 5 11 5 15a7 7 0 0 0 14 0C19 11 12 3 12 3z"/></svg></i>LABS</div>
   <div class="roles" role="group" aria-label="Ver la app como" id="roles"></div>
-  <span class="demo-tag">Demo con datos de ejemplo. El selector de rol es solo para la demostración.</span>
+  <div id="topright" class="row" style="margin-left:auto"></div>
 </div></header>
 <div id="app"></div>
 <div id="toast-host" aria-live="polite"></div>
@@ -114,5 +179,9 @@ ul.clean { margin: 0; padding-left: 20px; display: flex; flex-direction: column;
 <script src="engine.js"></script>
 <script src="ui.js"></script>
 <script src="ui2.js"></script>
+<script src="ui3.js"></script>
+<script src="ui4.js"></script>
+<script src="ui4b.js"></script>
+<script src="ui5.js"></script>
 </body>
 </html>

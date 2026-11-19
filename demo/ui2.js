@@ -65,7 +65,7 @@
   function docNav() { return side([{ id: 'lista', label: 'Mis pacientes' }, { id: 'sol', label: 'Solicitudes', badge: sectionBadge(S.requests.length) }], S.doc, 'Dra. [MÉDICO]', 'Médico · MPPS [______]'); }
   function docLista() {
     const P = D.DOCTOR_PATIENTS; const p = P[S.docSel]; const first = S.docSel === 0; const g = D.BY_ID.glu;
-    return '<div class="head"><div><h1>Mis pacientes</h1><p>Solo ves lo que cada paciente te permitió ver.</p></div><button class="btn ghost sm" type="button" data-a="role" data-v="pat">Cambiar a modo paciente</button></div>' +
+    return '<div class="head"><div><h1>Mis pacientes</h1><p>Solo ves lo que cada paciente te permitió ver.</p></div><button class="btn ghost sm" type="button" data-a="mode2" data-v="pat">Cambiar a modo paciente</button></div>' +
       '<div class="grid two"><div class="card"><h2>Pacientes</h2>' + P.map(function (x, i) {
         return '<button type="button" data-a="docsel" data-i="' + i + '" aria-pressed="' + (i === S.docSel) + '" style="text-align:left;border:0;border-radius:16px;padding:12px;cursor:pointer;background:' + (i === S.docSel ? 'rgba(76,95,213,0.16)' : 'rgba(255,255,255,0.6)') + ';font:inherit;color:inherit;min-height:44px"><div class="row between"><b>' + esc(x.name) + '</b>' + (x.alerts ? '<span class="chip warn">' + x.alerts + (x.alerts === 1 ? ' aviso' : ' avisos') + '</span>' : '<span class="chip ok">Sin avisos</span>') + '</div><div class="small muted">' + esc(x.exam) + ' · ' + esc(x.date) + (x.flag ? ' · ' + esc(x.flag) : '') + '</div></button>';
       }).join('') + '</div>' +
@@ -141,7 +141,7 @@
     const m = S.modal; if (!m) return '';
     if (m.type === 'pdf') {
       const r = D.PATIENT_RESULTS[m.i]; const code = L.docCode(r.id, r.date);
-      return '<div class="modal-bg" data-a="closebg"><div class="modal" role="dialog" aria-modal="true" aria-label="Documento firmado"><div class="row between"><h2>Documento firmado</h2><div class="row"><button class="btn ghost sm" type="button" data-a="print">Imprimir</button><button class="btn sm" type="button" data-a="close">Cerrar</button></div></div>' + U.sheetHtml(r, true) + '<p class="small muted">Código de verificación: <b>' + code + '</b>. Cualquiera puede confirmar que es auténtico escaneando el QR. En la demo el código y el QR son de ejemplo.</p></div></div>';
+      return '<div class="modal-bg" data-a="closebg"><div class="modal" role="dialog" aria-modal="true" aria-label="Documento firmado"><div class="row between"><h2>Documento firmado</h2><div class="row"><button class="btn ghost sm" type="button" data-a="print">Imprimir</button><button class="btn ghost sm" type="button" data-a="dlsheet" data-i="' + m.i + '">Descargar</button><button class="btn sm" type="button" data-a="close">Cerrar</button></div></div>' + U.sheetHtml(r, true) + '<p class="small muted">Código de verificación: <b>' + code + '</b>. Cualquiera puede confirmar que es auténtico escaneando el QR. En la demo el código y el QR son de ejemplo.</p></div></div>';
     }
     if (m.type === 'share') {
       return '<div class="modal-bg" data-a="closebg"><div class="modal" role="dialog" aria-modal="true" aria-label="Compartir"><div class="row between"><h2>Compartir con mi médico</h2><button class="btn sm" type="button" data-a="close">Cerrar</button></div><div class="card"><b>labs.ejemplo/c/K7P2-XM4D</b><div class="row"><span class="chip warn">Vence en 2 horas</span><span class="chip warn">Se abre máximo 3 veces</span></div><p class="small muted">Con este enlace tu médico ve solo este resultado. Puedes anularlo cuando quieras. Cada apertura queda en “Quién me vio”.</p></div></div></div>';
@@ -155,6 +155,7 @@
     return rs.map(function (r) { return '<button type="button" data-a="role" data-v="' + r[0] + '" aria-pressed="' + (S.role === r[0]) + '">' + r[1] + '</button>'; }).join('');
   }
   function render() {
+    if (window.EXT && window.EXT.render) { return window.EXT.render(); }
     const y = window.scrollY; const app = document.getElementById('app');
     app.innerHTML = (S.role === 'lab' ? U.labView() : S.role === 'pat' ? patView() : S.role === 'doc' ? docView() : admView()) + modalHtml();
     document.getElementById('roles').innerHTML = rolesBar();
@@ -163,6 +164,7 @@
     if (S.modal && S.modal.fresh) { S.modal.fresh = false; const b = document.querySelector('.modal [data-a="close"]'); if (b) b.focus(); }
   }
   window.render = render;
+  window.UI2 = { modalHtml: modalHtml, admResumen: admResumen, admLabs: admLabs, admClaves: admClaves, admRed: admRed, admRegistro: admRegistro, admNav: admNav };
   function top() { render(); window.scrollTo(0, 0); }
 
   /* ---------- Firma y sello ---------- */
@@ -191,8 +193,6 @@
     if (a === 'closebg') { if (ev.target !== t) return; S.modal = null; render(); return; }
     if (t.disabled) return;
     switch (a) {
-      case 'role': S.role = v; S.resIdx = null; S.modal = null; top(); return;
-      case 'nav': S[S.role === 'lab' ? 'lab' : S.role === 'pat' ? 'pat' : S.role === 'doc' ? 'doc' : 'adm'] = v; if (S.role === 'pat') S.resIdx = null; top(); return;
       case 'mode': S.mode = v; render(); return;
       case 'period': S.period = v; render(); return;
       case 'sample': try { const dm = L.defaultMarks(); setMarks(dm); S.extractMsg = 'Hoja de ejemplo cargada. ' + msgFor(dm); S.owner = false; S.saved = false; } catch (e) { S.extractMsg = 'No se pudo usar la hoja de ejemplo.'; } render(); return;

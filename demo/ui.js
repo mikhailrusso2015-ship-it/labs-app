@@ -64,17 +64,25 @@
   function normalText(c) { return c.kind === 'range' ? c.lo + ' a ' + c.hi : c.kind === 'max' ? 'menos de ' + c.hi : c.kind === 'min' ? 'más de ' + c.lo : '—'; }
 
   /* ---------- Hoja de resultado firmada ---------- */
+  function extraSheet(r) {
+    let h = '';
+    if (r.texts) Object.keys(r.texts).forEach(function (k) { h += '<div><b>' + esc(D.BY_ID[k] ? D.BY_ID[k].name : k) + ':</b> ' + esc(r.texts[k]) + '</div>'; });
+    if (r.pos) Object.keys(r.pos).forEach(function (k) { const x = r.pos[k]; h += '<div><b>' + esc(D.BY_ID[k] ? D.BY_ID[k].name : k) + ':</b> ' + esc(x.res) + (x.detail ? ' · ' + esc(x.detail) : '') + '</div>'; });
+    if (r.cult) Object.keys(r.cult).forEach(function (k) { const x = r.cult[k]; h += '<div style="border-top:1px solid #C9CFEA;padding-top:8px"><b>' + esc(D.BY_ID[k] ? D.BY_ID[k].name : k) + ':</b> ' + (x.none ? 'Sin desarrollo de bacterias' : esc(x.org) + '<table style="margin-top:4px"><tbody>' + x.rows.map(function (a) { return '<tr><td style="padding-right:12px">' + esc(a.ab) + '</td><td>' + ({ S: 'Sensible', I: 'Intermedio', R: 'Resistente' })[a.r] + '</td></tr>'; }).join('') + '</tbody></table>') + '</div>'; });
+    if (r.reports) Object.keys(r.reports).forEach(function (k) { const x = r.reports[k]; h += '<div style="border-top:1px solid #C9CFEA;padding-top:8px"><b>' + esc(D.BY_ID[k] ? D.BY_ID[k].name : k) + '</b><div><b>Hallazgos:</b> ' + esc(x.hallazgos) + '</div><div><b>Conclusión:</b> ' + esc(x.conclusion) + '</div>' + (x.img ? '<img src="' + x.img + '" alt="Imagen adjunta del estudio" style="max-width:220px;max-height:160px;border-radius:6px;margin-top:6px">' : '') + '<div class="small" style="font-size:12px">Interpretó: ' + esc(x.by || 'Especialista') + '</div></div>'; });
+    return h;
+  }
   function sheetHtml(r, withSeal) {
     const sum = L.summarize(r.values); const code = L.docCode(r.id, r.date);
     const rows = sum.rows.map(function (x) { return '<tr><td>' + esc(x.name) + '</td><td><b>' + x.v + '</b></td><td>' + esc(x.unit) + '</td><td>' + normalText(x.c) + '</td><td>' + (x.level === 'normal' ? 'Normal' : esc(x.label)) + '</td></tr>'; }).join('');
     const sig = withSeal && S.signUrl ? '<img class="sign" src="' + S.signUrl + '" alt="Firma del bioanalista" style="left:0;top:34px;max-width:150px;max-height:70px">' : '';
     const stp = withSeal && S.stampUrl ? '<img class="stamp" src="' + S.stampUrl + '" alt="Sello del laboratorio" style="left:120px;top:-6px;max-width:120px;max-height:120px;mix-blend-mode:multiply">' : '';
-    return '<div class="sheet" id="sheet"><div class="row between" style="border-bottom:2px solid #14193A;padding-bottom:10px"><div><b style="font-size:17px">' + esc(r.lab) + '</b><div>RIF [J-00000000-0] · Valencia, Carabobo</div></div><div style="text-align:right"><b>Resultado de laboratorio</b><div>Orden ' + esc(r.id) + '</div></div></div>' +
+    return '<div class="row between sheetbar"><span class="small muted">Hoja tamaño carta</span><button class="btn ghost sm" type="button" data-a="pz">' + (S.pz === 'big' ? 'Ver hoja completa' : 'Acercar') + '</button></div><div class="paper-fit"><div class="sheet" id="sheet"><div class="row between style="border-bottom:2px solid #14193A;padding-bottom:10px"><div><b style="font-size:17px">' + esc(r.lab) + '</b><div>RIF [J-00000000-0] · Valencia, Carabobo</div></div><div style="text-align:right"><b>Resultado de laboratorio</b><div>Orden ' + esc(r.id) + '</div></div></div>' +
       '<div class="row between"><div><b>Paciente:</b> ' + esc(r.patient) + ' · ' + esc(r.ci) + '</div><div><b>Edad:</b> ' + r.age + ' · <b>Sexo:</b> ' + r.sex + ' · <b>Fecha:</b> ' + esc(r.date) + '</div></div>' +
-      '<h3 style="margin-top:4px">' + esc(r.title) + '</h3><table><thead><tr><th>Examen</th><th>Resultado</th><th>Unidad</th><th>Margen normal</th><th>Estado</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<h3 style="margin-top:4px">' + esc(r.title) + '</h3><table><thead><tr><th>Examen</th><th>Resultado</th><th>Unidad</th><th>Margen normal</th><th>Estado</th></tr></thead><tbody>' + rows + '</tbody></table>' + extraSheet(r) +
       '<div class="foot"><div><div class="sig">' + sig + stp + '</div><div style="border-top:1px solid #14193A;padding-top:4px;width:250px">Lic. [NOMBRE DEL BIOANALISTA]<br>Bioanalista · N.º [______]</div></div>' +
       '<div style="text-align:center">' + L.qrSvg(code, 92) + '<div style="font-size:11px">' + code + '</div><div style="font-size:11px">QR de verificación (ejemplo)</div></div></div>' +
-      '<p style="font-size:11px;color:#3A4470">Validación electrónica de LABS, verificable con el código QR. Copia informativa: el laboratorio conserva el original. No es factura fiscal. Estos valores no reemplazan la opinión de un médico.</p></div>';
+      '<p style="font-size:11px;color:#3A4470">Validación electrónica de LABS, verificable con el código QR. Copia informativa: el laboratorio conserva el original. No es factura fiscal. Estos valores no reemplazan la opinión de un médico.</p></div></div>';
   }
 
   /* ---------- Piezas comunes ---------- */
@@ -87,7 +95,7 @@
     const r = D.RATES[S.mode]; return r.label + ': ' + L.fmtBs(r.value) + '. ' + r.note + '. En la versión real se muestra la hora de la última actualización.';
   }
   function side(items, cur, who, sub) {
-    return '<nav class="side" aria-label="Menú"><div class="who"><b>' + esc(who) + '</b><small>' + esc(sub) + '</small></div>' + items.map(function (i) { return '<button type="button" data-a="nav" data-v="' + i.id + '"' + (cur === i.id ? ' aria-current="page"' : '') + '>' + i.label + (i.badge ? '<span class="badge">' + i.badge + '</span>' : '') + '</button>'; }).join('') + '</nav>';
+    return '<nav class="side" aria-label="Menú"><div class="who"><b>' + esc(who) + '</b><small>' + esc(sub) + '</small></div>' + items.map(function (i) { if (i.sep) return '<div class="sep">' + esc(i.sep) + '</div>'; return '<button type="button" data-a="nav" data-v="' + i.id + '"' + (cur === i.id ? ' aria-current="page"' : '') + '>' + i.label + (i.badge ? '<span class="badge">' + i.badge + '</span>' : '') + '</button>'; }).join('') + '</nav>';
   }
 
   /* ---------- Laboratorio ---------- */
@@ -121,8 +129,8 @@
       '<div class="grid"><div class="card kpi"><small>Dólar BCV (ejemplo)</small><b>' + L.fmtBs(D.RATES.bcv.value) + '</b><small>Fuente oficial</small></div><div class="card kpi"><small>USDT (ejemplo)</small><b>' + L.fmtBs(D.RATES.usdt.value) + '</b><small>Mercado entre personas</small></div>' +
       '<div class="card kpi"><small>Tasa propia</small><label class="f"><span class="sr">Tasa propia en bolívares por dólar</span><input type="number" step="0.01" min="1" value="' + S.manualRate + '" data-c="manual"></label><small>Solo el dueño la cambia</small></div>' +
       '<div class="card kpi"><small>Diferencia USDT frente a BCV</small><b>' + Math.round((D.RATES.usdt.value / D.RATES.bcv.value - 1) * 100) + ' %</b><small>Se avisa si una fuente salta más de 10 % en un día</small></div></div>' +
-      '<div class="card"><div class="row between"><h2>Catálogo</h2><span class="small muted">' + rateNote() + '</span></div><div class="tw"><table><thead><tr><th>Examen</th><th>Precio USD</th><th>Costo USD</th><th>Ganancia</th><th>Precio al público (' + L.MODES.find(function (x) { return x.id === m; }).label + ')</th><th>Margen normal</th></tr></thead><tbody>' +
-      CAT.map(function (c, i) { const g = c.price - c.cost; return '<tr><td>' + esc(c.name) + '</td><td><label class="f"><span class="sr">Precio de ' + esc(c.name) + '</span><input type="number" step="0.5" min="0" value="' + c.price + '" data-c="price" data-i="' + i + '" style="width:90px"></label></td><td><label class="f"><span class="sr">Costo de ' + esc(c.name) + '</span><input type="number" step="0.1" min="0" value="' + c.cost + '" data-c="cost" data-i="' + i + '" style="width:90px"></label></td><td>' + L.fmtUsd(g) + ' <span class="small muted">(' + Math.round(g / c.price * 100) + ' %)</span></td><td><b>' + L.money(c.price, m, S) + '</b></td><td class="small">' + (c.kind === 'none' ? 'No aplica' : normalText(c) + ' ' + esc(c.unit)) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+      '<div class="card"><div class="row between"><h2>Catálogo</h2><span class="small muted">' + rateNote() + '</span></div><div class="tw"><table><thead><tr><th>Examen</th><th>Precio USD</th><th>Costo USD</th><th>Ganancia</th><th>Precio al público (' + L.MODES.find(function (x) { return x.id === m; }).label + ')</th><th>Margen normal</th><th>Quitar</th></tr></thead><tbody>' +
+      CAT.map(function (c, i) { const g = c.price - c.cost; return '<tr><td>' + esc(c.name) + '</td><td><label class="f"><span class="sr">Precio de ' + esc(c.name) + '</span><input type="number" step="0.5" min="0" value="' + c.price + '" data-c="price" data-i="' + i + '" style="width:90px"></label></td><td><label class="f"><span class="sr">Costo de ' + esc(c.name) + '</span><input type="number" step="0.1" min="0" value="' + c.cost + '" data-c="cost" data-i="' + i + '" style="width:90px"></label></td><td>' + L.fmtUsd(g) + ' <span class="small muted">(' + Math.round(g / c.price * 100) + ' %)</span></td><td><b>' + L.money(c.price, m, S) + '</b></td><td class="small">' + (c.kind === 'none' ? 'No aplica' : c.kind === 'report' ? 'Informe del especialista' : normalText(c) + ' ' + esc(c.unit)) + '</td><td><button class="btn ghost sm" type="button" data-a="exdel" data-i="' + i + '" aria-label="Quitar ' + esc(c.name) + '">Quitar</button></td></tr>'; }).join('') + '</tbody></table></div>' +
       '<p class="small muted">Si falta el costo de un examen, el sistema dice “sin costo cargado” y no inventa la ganancia. El margen normal lo pone el laboratorio, según su equipo.</p></div>';
   }
 
@@ -183,11 +191,12 @@
     return '<div class="head"><div><h1>Mi equipo</h1><p>Una cuenta por persona. Así se sabe quién hizo qué.</p></div></div><div class="card"><div class="tw"><table><thead><tr><th>Persona</th><th>Rol</th><th>Qué puede hacer</th><th>Estado</th></tr></thead><tbody>' + team.map(function (t) { return '<tr><td><b>' + t.n + '</b></td><td>' + t.r + '</td><td>' + t.can + '</td><td>' + (t.c ? '<span class="chip ok">Activa</span>' : '<span class="chip gray">Dada de baja</span>') + '</td></tr>'; }).join('') + '</tbody></table></div><p class="small muted">Solo el bioanalista puede estampar la firma y el sello. Si alguien se va, el dueño le quita el acceso al instante.</p></div>';
   }
 
+  const LAB_VIEWS = { resumen: labResumen, catalogo: labCatalogo, reportes: labReportes, red: labRed, firma: labFirma, equipo: labEquipo };
   function labView() {
     const nav = LAB_NAV.map(function (n) { return n; });
     const views = { resumen: labResumen, enviar: sendResult, catalogo: labCatalogo, reportes: labReportes, red: labRed, firma: labFirma, equipo: labEquipo };
     return '<div class="shell">' + side(nav, S.lab, esc(S.labs[0].name), 'Panel del laboratorio') + '<main class="main">' + views[S.lab]() + '</main></div>';
   }
 
-  window.UI = { esc: esc, chipFor: chipFor, logAudit: logAudit, toast: toast, lineBand: lineBand, rangeBar: rangeBar, normalText: normalText, sheetHtml: sheetHtml, side: side, spark: spark, hbars: hbars, labView: labView, nowTime: nowTime, modeSelect: modeSelect };
+  window.UI = { esc: esc, chipFor: chipFor, logAudit: logAudit, toast: toast, lineBand: lineBand, rangeBar: rangeBar, normalText: normalText, sheetHtml: sheetHtml, side: side, spark: spark, hbars: hbars, labView: labView, labViews: LAB_VIEWS, nowTime: nowTime, modeSelect: modeSelect };
 })();

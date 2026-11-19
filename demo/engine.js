@@ -69,6 +69,13 @@
       if (v <= 16) return ['normal', 'Normal', 'Tu hemoglobina está en el margen normal.'];
       return ['vigilar', 'Un poco alta', 'Tu hemoglobina está algo alta. Toma agua y coméntalo con tu médico.'];
     },
+    plq: function (v) {
+      if (v < 50) return ['urgente', 'Muy bajas', 'Tus plaquetas están muy bajas. Ve hoy al médico o a emergencias.'];
+      if (v < 100) return ['alto', 'Bajas', 'Tus plaquetas están bajas. Ve hoy a tu médico: con fiebre, puede ser importante.'];
+      if (v < 150) return ['vigilar', 'Un poco bajas', 'Tus plaquetas están algo bajas. Coméntalo con tu médico.'];
+      if (v <= 450) return ['normal', 'Normales', 'Tus plaquetas están en el margen normal.'];
+      return ['vigilar', 'Un poco altas', 'Tus plaquetas están algo altas. Coméntalo con tu médico.'];
+    },
     tsh: function (v) {
       if (v < 0.4) return ['vigilar', 'Un poco baja', 'Coméntalo con tu médico. Es mejor que él mire tu tiroides.'];
       if (v <= 4) return ['normal', 'Normal', 'Tu tiroides está en el margen normal.'];
@@ -76,8 +83,15 @@
     }
   };
   const LEVEL_ORDER = { normal: 0, vigilar: 1, alto: 2, urgente: 3 };
+  function genericRule(c, v) {
+    const tip = 'Este valor está fuera del margen normal. Coméntalo con tu médico: solo él puede decir qué significa.';
+    const lo = c.kind === 'max' ? null : c.lo, hi = c.kind === 'min' ? null : c.hi;
+    if (hi !== null && hi !== undefined && v > hi) { const d = (v - hi) / hi; return d <= 0.15 ? ['vigilar', 'Un poco alto', tip] : d <= 0.6 ? ['alto', 'Alto', tip] : ['urgente', 'Muy alto', 'Este valor está muy fuera del margen. Ve hoy al médico.']; }
+    if (lo !== null && lo !== undefined && v < lo) { const d = (lo - v) / lo; return d <= 0.15 ? ['vigilar', 'Un poco bajo', tip] : d <= 0.5 ? ['alto', 'Bajo', tip] : ['urgente', 'Muy bajo', 'Este valor está muy fuera del margen. Ve hoy al médico.']; }
+    return ['normal', 'Normal', 'Este valor está en el margen normal.'];
+  }
   function judge(item) {
-    const c = D.BY_ID[item.id]; const r = RULES[item.id] ? RULES[item.id](item.v) : ['normal', 'Normal', ''];
+    const c = D.BY_ID[item.id]; const r = RULES[item.id] ? RULES[item.id](item.v) : genericRule(c, item.v);
     return { id: item.id, name: c.name, unit: c.unit, v: item.v, c: c, level: r[0], label: r[1], tip: r[2] };
   }
   function summarize(values) {

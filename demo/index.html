@@ -61,7 +61,7 @@ p { margin: 0; }
 .between { justify-content: space-between; }
 .muted { color: var(--muted); } .small { font-size: 13px; }
 
-.btn { min-height: 44px; padding: 0 22px; border: 0; border-radius: 14px; background: linear-gradient(135deg, #5668E0, #3F51C9); color: #fff; font: inherit; font-weight: 600; font-size: 15px; letter-spacing: .1px; cursor: pointer; box-shadow: 0 6px 14px rgba(51,69,181,.28); display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; text-align: center; line-height: 1.1; transition: transform .12s, box-shadow .12s, background .12s; }
+.btn { min-height: 44px; padding: 0 22px; border: 0; border-radius: 14px; background: linear-gradient(135deg, #5668E0, #3F51C9); color: #fff; font: inherit; font-weight: 600; font-size: 15px; letter-spacing: .1px; cursor: pointer; box-shadow: 0 6px 14px rgba(51,69,181,.28); display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: normal; max-width: 100%; text-align: center; line-height: 1.2; padding-top: 6px; padding-bottom: 6px; transition: transform .12s, box-shadow .12s, background .12s; }
 .btn:active { transform: scale(.97); box-shadow: 0 3px 8px rgba(51,69,181,.25); }
 .btn.ghost { background: rgba(63,81,201,.11); color: var(--link); box-shadow: none; }
 .btn.ghost:hover { background: rgba(63,81,201,.18); }
@@ -208,7 +208,7 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 .scanbox video { width: 100%; height: 100%; object-fit: cover; }
 .scanframe { position: absolute; inset: 18%; border: 3px solid #fff; border-radius: 18px; box-shadow: 0 0 0 999px rgba(13,16,48,.35); }
 .scerr { color: #B42318; font-weight: 600; }
-.qrthumb { width: 64px; height: 64px; border-radius: 10px; background: #fff; cursor: pointer; border: 0; padding: 2px; box-shadow: 0 4px 10px rgba(51,69,181,.2); }
+.qrthumb { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; border-radius: 16px; background: rgba(255,255,255,.75); padding: 8px; font: inherit; color: inherit; cursor: pointer; box-shadow: 0 4px 10px rgba(51,69,181,.12); } .qrthumb img { width: 64px; height: 64px; border-radius: 10px; background: #fff; flex: none; } .qrthumb span { font-size: 13px; }
 .autodata { background: #fff; border-radius: 16px; padding: 12px; margin-bottom: 10px; box-shadow: inset 0 0 0 2px #1BAF7A; } .autodata .grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 6px; } .autodata b { overflow-wrap: anywhere; }
 .labpick { display: grid; gap: 8px; } .labopt { text-align: left; border: 0; border-radius: 16px; padding: 12px 14px; background: #fff; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 2px; box-shadow: inset 0 0 0 1px rgba(51,69,181,.18); } .labopt span { font-size: 12.5px; color: var(--muted); } .labopt[aria-pressed="true"] { box-shadow: inset 0 0 0 3px #3345B5; background: #EEF1FF; }
 /* ---- Panel de inicio con gráficas ---- */
@@ -238,7 +238,7 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 760px) { .btn { font-size: 14px; padding: 0 16px; } .btn.sm { font-size: 13px; padding: 0 12px; min-height: 36px; } .acch .t { font-size: 15px; } }
 
-@media (max-width: 760px) { .seg { padding: 4px; gap: 2px; flex-wrap: nowrap; overflow-x: auto; } .seg button { padding: 0 11px; font-size: 13px; white-space: nowrap; min-height: 38px; } }
+@media (max-width: 760px) { .seg { display: flex; padding: 4px; gap: 2px; flex-wrap: wrap; border-radius: 22px; max-width: 100%; } .seg button { flex: 1 1 auto; padding: 0 11px; font-size: 13px; min-height: 38px; } }
 
 /* ---- Selector de período (pestañita desplegable) ---- */
 .perrow { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; } .perrow b { font-size: 16px; }
@@ -257,6 +257,12 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 .mic { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; flex: none; }
 .ml { flex: 1; font-size: 15px; font-weight: 600; }
 .mrow .badge { font-style: normal; }
+
+/* ---- Tablas del teléfono como tarjetas ---- */
+.tcards .acc { margin-top: 6px; background: rgba(255,255,255,.7); } .tcards .acch .chip { flex: none; }
+.tcb { gap: 8px; } .tkv { display: flex; flex-direction: column; gap: 2px; } .tkv small { font-size: 12px; color: var(--muted); } .tkv > div { font-size: 14px; overflow-wrap: anywhere; }
+.tka { display: flex; flex-wrap: wrap; gap: 8px; } .tka > .row, .tka .row { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 760px) { .tw { overflow-x: visible; } .tcards { width: 100%; } }
 </style>
 </head>
 <body>
@@ -268,19 +274,19 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 <div id="app"></div>
 <nav id="dock" aria-label="Barra principal" hidden></nav>
 <div id="toast-host" aria-live="polite"></div>
-<script src="data.js"></script>
-<script src="engine.js"></script>
-<script src="jsqr.js"></script>
-<script src="qrgen.js"></script>
-<script src="qrtools.js"></script>
-<script src="ui.js"></script>
-<script src="ui2.js"></script>
-<script src="ui3.js"></script>
-<script src="ui4.js"></script>
-<script src="ui4b.js"></script>
-<script src="ui5.js"></script>
-<script src="ui6.js"></script>
-<script src="ui7.js"></script>
-<script src="ui8.js"></script>
+<script src="data.js?v=20261119b"></script>
+<script src="engine.js?v=20261119b"></script>
+<script src="jsqr.js?v=20261119b"></script>
+<script src="qrgen.js?v=20261119b"></script>
+<script src="qrtools.js?v=20261119b"></script>
+<script src="ui.js?v=20261119b"></script>
+<script src="ui2.js?v=20261119b"></script>
+<script src="ui3.js?v=20261119b"></script>
+<script src="ui4.js?v=20261119b"></script>
+<script src="ui4b.js?v=20261119b"></script>
+<script src="ui5.js?v=20261119b"></script>
+<script src="ui6.js?v=20261119b"></script>
+<script src="ui7.js?v=20261119b"></script>
+<script src="ui8.js?v=20261119b"></script>
 </body>
 </html>

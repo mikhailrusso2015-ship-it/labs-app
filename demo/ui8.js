@@ -153,5 +153,28 @@
     V[r].menu = function () { return menuView(r); };
     EXT.nav[r] = [{ id: 'inicio', label: 'Inicio' }, { id: 'menu', label: 'Menú', hidden: true }].concat(EXT.nav[r].filter(function (i) { return i.id !== 'inicio' && i.id !== 'menu'; }));
   });
+
+  /* ---------- Teléfono: ninguna tabla con scroll lateral; cada fila es una tarjeta que se abre ---------- */
+  function flat(html) { const d = document.createElement('div'); d.innerHTML = String(html).replace(/<(br|\/div|\/p|\/b|\/span)[^>]*>/gi, '$& '); return d.textContent.replace(/\s+/g, ' ').trim(); }
+  A['trow'] = function (v) { const p = v.split(':'); const k = (S.role + '/' + S[S.role]) + '#' + p[0]; S.tro = S.tro || {}; S.tro[k] = S.tro[k] === p[1] ? null : p[1]; window.render(); };
+  window.UI_post = function () {
+    const mob = !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches); if (!mob) return;
+    const app = document.getElementById('app'); if (!app) return; S.tro = S.tro || {};
+    Array.prototype.forEach.call(app.querySelectorAll('.tw table'), function (tb, ti) {
+      if (tb.closest('.paper-fit') || tb.closest('.sheet')) return;
+      const heads = Array.prototype.map.call(tb.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); }); const key = (S.role + '/' + S[S.role]) + '#' + ti; const openRow = S.tro[key];
+      const wrap = document.createElement('div'); wrap.className = 'tcards';
+      Array.prototype.forEach.call(tb.querySelectorAll('tbody tr'), function (tr, ri) {
+        const tds = Array.prototype.slice.call(tr.children); if (!tds.length) return; const first = tds[0]; const b = first.querySelector('b'); const title = flat(first.innerHTML) || '—';
+        const second = tds[1]; const sub = second && !second.querySelector('input,button,select,svg') ? flat(second.innerHTML).slice(0, 60) : ''; let chip = ''; for (let i = 1; i < tds.length; i++) { const c = tds[i].querySelector('.chip'); if (c) { chip = c.outerHTML; break; } }
+        const o = String(ri) === String(openRow); let body = '', acts = '';
+        for (let i = 1; i < tds.length; i++) { const lab = heads[i] || ''; const hasBtn = tds[i].querySelector('button'); const onlyBtn = hasBtn && !tds[i].querySelector('input,select') && flat(tds[i].innerHTML).length < 80; if (onlyBtn || /^(acciones?|quitar)$/i.test(lab)) acts += '<div class="tka">' + tds[i].innerHTML + '</div>'; else if (tds[i].innerHTML.trim()) body += '<div class="tkv"><small>' + esc(lab) + '</small><div>' + tds[i].innerHTML + '</div></div>'; }
+        const d = document.createElement('div'); d.className = 'acc';
+        d.innerHTML = '<button type="button" class="acch" data-a="trow" data-v="' + ti + ':' + ri + '" aria-expanded="' + o + '"><span class="t">' + esc(title.length > 46 ? title.slice(0, 44) + '…' : title) + (sub && sub !== title ? '<span class="s">' + esc(sub) + '</span>' : '') + '</span>' + chip + '<i class="chev' + (o ? ' open' : '') + '" aria-hidden="true">›</i></button>' + (o ? '<div class="accb tcb">' + body + acts + '</div>' : '');
+        wrap.appendChild(d);
+      });
+      tb.parentNode.replaceChild(wrap, tb);
+    });
+  };
   window.render();
 })();

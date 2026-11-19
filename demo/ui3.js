@@ -369,7 +369,7 @@
   function render() {
     const y = window.scrollY; const app = document.getElementById('app'); const act = document.activeElement; const key = act && act.getAttribute ? act.getAttribute('data-c') : null; const sel = act && act.selectionStart !== undefined ? [act.selectionStart, act.selectionEnd] : null;
     app.innerHTML = (S.auth ? shell() : loginView()) + (U2.modalHtml() || '') + dlgHtml();
-    header();
+    header(); if (window.UI_post) window.UI_post();
     document.getElementById('toast-host').innerHTML = S.toast ? '<div class="toast" role="status">' + esc(S.toast) + '</div>' : '';
     window.scrollTo(0, y); fitPapers();
     syncModal(); if (S.modal && S.modal.fresh) { S.modal.fresh = false; const b = document.querySelector('.modal [data-a="close"]'); if (b) b.focus(); }

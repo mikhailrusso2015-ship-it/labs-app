@@ -75,12 +75,12 @@
   function sheetHtml(r, withSeal) {
     const sum = L.summarize(r.values); const code = L.docCode(r.id, r.date);
     const rows = sum.rows.map(function (x) { return '<tr><td>' + esc(x.name) + '</td><td><b>' + x.v + '</b></td><td>' + esc(x.unit) + '</td><td>' + normalText(x.c) + '</td><td>' + (x.level === 'normal' ? 'Normal' : esc(x.label)) + '</td></tr>'; }).join('');
-    const sig = withSeal && S.signUrl ? '<img class="sign" src="' + S.signUrl + '" alt="Firma del bioanalista" style="left:0;top:34px;max-width:150px;max-height:70px">' : '';
+    const sig = withSeal && !r.auto && S.signUrl ? '<img class="sign" src="' + S.signUrl + '" alt="Firma del bioanalista" style="left:0;top:34px;max-width:150px;max-height:70px">' : '';
     const stp = withSeal && S.stampUrl ? '<img class="stamp" src="' + S.stampUrl + '" alt="Sello del laboratorio" style="left:120px;top:-6px;max-width:120px;max-height:120px;mix-blend-mode:multiply">' : '';
     return '<div class="row between sheetbar"><span class="small muted">Hoja tamaño carta</span><button class="btn ghost sm" type="button" data-a="pz">' + (S.pz === 'big' ? 'Ver hoja completa' : 'Acercar') + '</button></div><div class="paper-fit"><div class="sheet" id="sheet"><div class="row between style="border-bottom:2px solid #14193A;padding-bottom:10px"><div><b style="font-size:17px">' + esc(r.lab) + '</b><div>RIF [J-00000000-0] · Valencia, Carabobo</div></div><div style="text-align:right"><b>Resultado de laboratorio</b><div>Orden ' + esc(r.id) + '</div></div></div>' +
       '<div class="row between"><div><b>Paciente:</b> ' + esc(r.patient) + ' · ' + esc(r.ci) + '</div><div><b>Edad:</b> ' + r.age + ' · <b>Sexo:</b> ' + r.sex + ' · <b>Fecha:</b> ' + esc(r.date) + '</div></div>' +
       '<h3 style="margin-top:4px">' + esc(r.title) + '</h3><table><thead><tr><th>Examen</th><th>Resultado</th><th>Unidad</th><th>Margen normal</th><th>Estado</th></tr></thead><tbody>' + rows + '</tbody></table>' + extraSheet(r) +
-      '<div class="foot"><div><div class="sig">' + sig + stp + '</div><div style="border-top:1px solid #14193A;padding-top:4px;width:250px">Lic. [NOMBRE DEL BIOANALISTA]<br>Bioanalista · N.º [______]</div></div>' +
+      '<div class="foot"><div><div class="sig">' + sig + stp + '</div><div style="border-top:1px solid #14193A;padding-top:4px;width:250px">' + (r.auto ? 'Autoverificado por LABS<br>Reglas aprobadas por ' + esc(r.auto.by) + ' (' + esc(r.auto.at) + ')' : 'Lic. [NOMBRE DEL BIOANALISTA]<br>Bioanalista · N.º [______]') + '</div></div>' +
       '<div style="text-align:center">' + L.qrSvg(code, 92) + '<div style="font-size:11px">' + code + '</div><div style="font-size:11px">QR de verificación (ejemplo)</div></div></div>' +
       '<p style="font-size:11px;color:#3A4470">Validación electrónica de LABS, verificable con el código QR. Copia informativa: el laboratorio conserva el original. No es factura fiscal. Estos valores no reemplazan la opinión de un médico.</p></div></div>';
   }

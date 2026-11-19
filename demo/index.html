@@ -327,6 +327,14 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 .dkg { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px 28px; padding-top: 12px; }
 .dkg .tkv > div { font-size: 14.5px; line-height: 1.45; }
 .dka { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed rgba(201,207,234,.9); } .dka .tka { display: contents; }
+
+/* Bots de IA */
+.botc { border-left: 6px solid #7683BA; } .botc.lv1 { border-left-color: var(--warn); } .botc.lv2 { border-left-color: var(--crit); }
+.botc .bh { display: flex; align-items: center; gap: 10px; } .botc .bh h2 { margin: 0; }
+ul.bl { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.bchk { display: flex; gap: 10px; align-items: flex-start; } .bi { width: 24px; height: 24px; flex: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+.k-ok .bi { background: var(--ok-bg); color: var(--ok-ink); } .k-revisar .bi, .k-info .bi { background: var(--warn-bg); color: var(--warn-ink); } .k-critico .bi { background: var(--crit-bg); color: var(--crit-ink); }
+.fnd { padding: 8px 0 8px 12px; border-left: 4px solid var(--ok-bg); } .fnd.f1 { border-left-color: var(--warn); } .fnd.f2 { border-left-color: var(--crit); }
 </style>
 </head>
 <body>
@@ -338,20 +346,22 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 <div id="app"></div>
 <nav id="dock" aria-label="Barra principal" hidden></nav>
 <div id="toast-host" aria-live="polite"></div>
-<script src="data.js?v=20261119t"></script>
-<script src="engine.js?v=20261119t"></script>
-<script src="jsqr.js?v=20261119t"></script>
-<script src="qrgen.js?v=20261119t"></script>
-<script src="qrtools.js?v=20261119t"></script>
-<script src="ui.js?v=20261119t"></script>
-<script src="ui2.js?v=20261119t"></script>
-<script src="ui3.js?v=20261119t"></script>
-<script src="ui4.js?v=20261119t"></script>
-<script src="ui4b.js?v=20261119t"></script>
-<script src="ui5.js?v=20261119t"></script>
-<script src="ui6.js?v=20261119t"></script>
-<script src="ui7.js?v=20261119t"></script>
-<script src="ui8.js?v=20261119t"></script>
-<script src="ui9.js?v=20261119t"></script>
+<script src="data.js?v=20261119u"></script>
+<script src="engine.js?v=20261119u"></script>
+<script src="bots.js?v=20261119u"></script>
+<script src="jsqr.js?v=20261119u"></script>
+<script src="qrgen.js?v=20261119u"></script>
+<script src="qrtools.js?v=20261119u"></script>
+<script src="ui.js?v=20261119u"></script>
+<script src="ui2.js?v=20261119u"></script>
+<script src="ui3.js?v=20261119u"></script>
+<script src="ui4.js?v=20261119u"></script>
+<script src="ui4b.js?v=20261119u"></script>
+<script src="ui5.js?v=20261119u"></script>
+<script src="ui6.js?v=20261119u"></script>
+<script src="ui7.js?v=20261119u"></script>
+<script src="ui8.js?v=20261119u"></script>
+<script src="ui9.js?v=20261119u"></script>
+<script src="ui10.js?v=20261119u"></script>
 </body>
 </html>

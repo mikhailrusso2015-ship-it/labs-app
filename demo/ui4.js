@@ -133,7 +133,7 @@
         let acts = '';
         if (!o.paid && o.status !== 'Anulada') acts += o.payRep ? '<button class="btn sm" type="button" data-a="rcpt-view" data-v="' + o.id + '">Ver comprobante</button>' : '<button class="btn sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar primero</button>';
         if (o.status === 'Esperando paciente') acts += '<button class="btn ghost sm" type="button" data-a="o-remind" data-v="' + o.id + '">Recordar al paciente</button>';
-        if (o.paid && (o.status === 'Por procesar' || o.status === 'En proceso') && isOwner()) acts += '<button class="btn sm" type="button" data-a="o-open" data-v="' + o.id + '">' + (o.status === 'En proceso' ? 'Continuar resultados' : 'Cargar resultados') + '</button>';
+        if (o.paid && (o.status === 'Por procesar' || o.status === 'En proceso') && (isOwner() || (S.auto && S.auto.on))) acts += '<button class="btn sm" type="button" data-a="o-open" data-v="' + o.id + '">' + (o.status === 'En proceso' ? 'Continuar resultados' : 'Cargar resultados') + '</button>';
         if (o.status === 'Enviada') acts += '<button class="btn ghost sm" type="button" data-a="o-view" data-v="' + o.id + '">Ver resultado</button>';
         if (o.status !== 'Enviada' && o.status !== 'Anulada') acts += '<button class="btn ghost sm" type="button" data-a="o-void" data-v="' + o.id + '">Anular</button>';
         const pp = X.personOf(o.pid) || {}; const exl = o.exams.length > 2 || examNames(o.exams).length > 38 ? 'Varios' : examNames(o.exams);
@@ -196,6 +196,7 @@
     });
     return { values: values, texts: texts, reports: reports, pos: pos, cult: cult, errs: errs };
   }
+  EXT.resCollect = collect;
   V.resultado = function () {
     const o = findOrder(S.ordSel); if (!o) return '<div class="card"><p>No hay una orden abierta.</p><button class="btn" type="button" data-a="nav" data-v="ordenes">Ir a Órdenes</button></div>'; const p = X.personOf(o.pid);
     const vals = o.exams.filter(function (e) { return isNum(D.BY_ID[e]); }).map(function (e) { const x = parseFloat(F('rv-' + e)); return isFinite(x) && x > 0 ? { id: e, v: x } : null; }).filter(Boolean);
@@ -216,25 +217,27 @@
     D.PATIENT_RESULTS.filter(function (r) { return r.pid === pid; }).forEach(function (r) { const x = r.values.filter(function (y) { return y.id === 'glu'; })[0]; if (x) pts.push({ m: (r.date.split(' de ')[1] || '').slice(0, 3).replace(/^./, function (c) { return c.toUpperCase(); }), v: x.v }); });
     if (!pts.length) return null; pts.push({ m: 'Nov', v: g.v }); return { id: 'glu', points: pts.slice(-5) };
   }
-  A['res-send'] = function () {
-    const o = findOrder(S.ordSel); if (!isOwner()) return setErr('sd', 'Solo el bioanalista puede firmar y enviar resultados.');
+  A['res-send'] = function (mode) {
+    const auto = mode === 'auto';
+    const o = findOrder(S.ordSel); if (!auto && !isOwner()) return setErr('sd', 'Solo el bioanalista puede firmar y enviar resultados.');
     const col = collect(o); if (col.errs.length) return setErr('rs', col.errs[0]);
     const sum = L.summarize(col.values); const crit = sum.worst === 'urgente';
-    if (!S.signUrl || !S.stampUrl || !S.saved || !S.owner) return setErr('sd', 'Primero guarda tu firma y tu sello (menú Firma y sello).');
+    let bot = null; if (auto) { bot = window.BOTS.bio.review(o, X.personOf(o.pid), col, S.auto); if (bot.decision !== 'auto') return setErr('sd', 'El bot bioanalista no autoriza la salida automática de este resultado. Lo debe revisar el bioanalista.'); }
+    if (!auto && (!S.signUrl || !S.stampUrl || !S.saved || !S.owner)) return setErr('sd', 'Primero guarda tu firma y tu sello (menú Firma y sello).');
     if (crit && !F('sd-call')) return setErr('sd', 'Hay un valor crítico: llama al paciente o a su médico y marca la casilla.');
     const posNotif = o.exams.filter(function (e) { return D.BY_ID[e].notif && col.pos[e] && col.pos[e].res === 'Positivo'; }); if (posNotif.length && !F('sd-notif')) return setErr('sd', 'Hay un caso de notificación obligatoria: avisa al Ministerio de Salud y marca la casilla.');
     if (o.exams.some(function (e) { return D.BY_ID[e].sens; }) && !F('sd-sens')) return setErr('sd', 'Hay un resultado sensible: marca que ofreciste orientación al paciente.');
-    if (!F('sd-review')) return setErr('sd', 'Marca que revisaste cada valor.'); if (!/^\d{6}$/.test(F('sd-code'))) return setErr('sd', 'El código de seguridad debe tener 6 números.');
+    if (!auto && !F('sd-review')) return setErr('sd', 'Marca que revisaste cada valor.'); if (!auto && !/^\d{6}$/.test(F('sd-code'))) return setErr('sd', 'El código de seguridad debe tener 6 números.');
     if (!o.paid && !confirmed(o)) return;
     const p = X.personOf(o.pid); const names = o.exams.map(function (e) { return D.BY_ID[e].name; }); const title = names.length > 3 ? names.slice(0, 3).join(', ') + ' y ' + (names.length - 3) + ' más' : names.join(', ');
     const r = { id: o.id, title: title, lab: S.labs[0].name, date: X.longDate(), patient: p.name, ci: p.ci ? X.maskCi(p.ci) : 'Dependiente', age: p.age, sex: p.sex, values: col.values, history: histFor(o.pid, col.values), pid: o.pid };
-    if (Object.keys(col.texts).length) r.texts = col.texts; if (Object.keys(col.reports).length) r.reports = col.reports; if (Object.keys(col.pos).length) r.pos = col.pos; if (Object.keys(col.cult).length) r.cult = col.cult; r.live = true; r.sens = o.exams.some(function (e) { return D.BY_ID[e].sens; });
+    if (Object.keys(col.texts).length) r.texts = col.texts; if (Object.keys(col.reports).length) r.reports = col.reports; if (Object.keys(col.pos).length) r.pos = col.pos; if (Object.keys(col.cult).length) r.cult = col.cult; r.live = true; r.sens = o.exams.some(function (e) { return D.BY_ID[e].sens; }); if (auto) { r.auto = { by: S.auto.by, at: S.auto.at, who: S.auth.name }; S.auto.released++; }
     S.cases = S.cases || {}; posNotif.forEach(function (e) { S.cases[e] = (S.cases[e] || 0) + 1; });
     D.PATIENT_RESULTS.push(r); const idx = D.PATIENT_RESULTS.length - 1; o.status = 'Enviada'; o.resultIdx = idx; o.draft = null;
     notify('pat', 'Tienes un documento nuevo en LABS.', { type: 'res', ref: idx }, o.pid);
     if (S.access.some(function (a) { return a.pid === o.pid && a.on; })) notify('doc', 'Hay un resultado nuevo de un paciente que te dio acceso (' + o.id + ').', { type: 'go', ref: 'lista' });
-    logAudit(S.auth.name, 'Resultado ' + o.id + ' firmado, sellado y enviado' + (posNotif.length ? ' (caso de notificación obligatoria anotado)' : '') + (crit ? ' (valor crítico informado a las ' + U.nowTime() + ')' : ''));
-    clearRes(); S.err = {}; S.lab = 'ordenes'; S.ofilter = 'enviada'; toast('Enviado. El paciente recibe solo el aviso: “Tienes un documento nuevo en LABS”.'); render(); window.scrollTo(0, 0);
+    logAudit(S.auth.name, 'Resultado ' + o.id + (auto ? ' liberado por autoverificación (bot bioanalista; reglas aprobadas por ' + S.auto.by + ')' : ' firmado, sellado y enviado') + (posNotif.length ? ' (caso de notificación obligatoria anotado)' : '') + (crit ? ' (valor crítico informado a las ' + U.nowTime() + ')' : ''));
+    clearRes(); S.err = {}; S.lab = 'ordenes'; S.ofilter = 'enviada'; toast((auto ? 'Liberado por autoverificación. ' : 'Enviado. ') + 'El paciente recibe solo el aviso: “Tienes un documento nuevo en LABS”.'); render(); window.scrollTo(0, 0);
   };
   function confirmed(o) { return true; }
 

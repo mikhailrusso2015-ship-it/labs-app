@@ -311,6 +311,18 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 @media (max-width: 420px) { .demobtn { gap: 8px; padding: 8px 8px; } .demobtn .dico { width: 32px; height: 32px; border-radius: 10px; } .demobtn .dico svg { width: 18px; height: 18px; } .demobtn b { font-size: 14px; } .demo-card { padding: 14px; } }
 .demo-help { margin-top: 10px; } .demo-help summary { font-size: 13px; color: var(--muted); }
 @media (min-width: 861px) { .login.wide { justify-content: center; min-height: calc(100vh - 90px); } .lhome { grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center; } .lhero h1 { font-size: 40px; } .ltrust { display: flex; } .lhero .lead { font-size: 17px; } .lbrand { height: 64px; } }
+
+/* Tablas como tarjetas en computadora */
+.tcards.desk { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.tcards.desk .acc { margin-top: 0; }
+.acch.dk { display: grid; grid-template-columns: minmax(170px, 1.1fr) minmax(200px, 2fr) minmax(150px, auto) 20px; gap: 16px; align-items: center; padding: 14px 20px; min-height: 60px; }
+.acch.dk .dk1 { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .acch.dk .dk1 b { font-size: 15.5px; } .acch.dk .dk1 small { font-size: 12.5px; color: var(--muted); }
+.acch.dk .dk2 { font-weight: 600; font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .acch.dk .dk3 { justify-self: end; } .acch.dk .dk3 .chip { white-space: nowrap; }
+.acch.dk:hover { background: rgba(255,255,255,.55); }
+.dkb { padding: 6px 20px 18px; border-top: 1px solid rgba(201,207,234,.7); }
+.dkg { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px 28px; padding-top: 12px; }
+.dkg .tkv > div { font-size: 14.5px; line-height: 1.45; }
+.dka { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed rgba(201,207,234,.9); } .dka .tka { display: contents; }
 </style>
 </head>
 <body>
@@ -322,20 +334,20 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 <div id="app"></div>
 <nav id="dock" aria-label="Barra principal" hidden></nav>
 <div id="toast-host" aria-live="polite"></div>
-<script src="data.js?v=20261119q"></script>
-<script src="engine.js?v=20261119q"></script>
-<script src="jsqr.js?v=20261119q"></script>
-<script src="qrgen.js?v=20261119q"></script>
-<script src="qrtools.js?v=20261119q"></script>
-<script src="ui.js?v=20261119q"></script>
-<script src="ui2.js?v=20261119q"></script>
-<script src="ui3.js?v=20261119q"></script>
-<script src="ui4.js?v=20261119q"></script>
-<script src="ui4b.js?v=20261119q"></script>
-<script src="ui5.js?v=20261119q"></script>
-<script src="ui6.js?v=20261119q"></script>
-<script src="ui7.js?v=20261119q"></script>
-<script src="ui8.js?v=20261119q"></script>
-<script src="ui9.js?v=20261119q"></script>
+<script src="data.js?v=20261119r"></script>
+<script src="engine.js?v=20261119r"></script>
+<script src="jsqr.js?v=20261119r"></script>
+<script src="qrgen.js?v=20261119r"></script>
+<script src="qrtools.js?v=20261119r"></script>
+<script src="ui.js?v=20261119r"></script>
+<script src="ui2.js?v=20261119r"></script>
+<script src="ui3.js?v=20261119r"></script>
+<script src="ui4.js?v=20261119r"></script>
+<script src="ui4b.js?v=20261119r"></script>
+<script src="ui5.js?v=20261119r"></script>
+<script src="ui6.js?v=20261119r"></script>
+<script src="ui7.js?v=20261119r"></script>
+<script src="ui8.js?v=20261119r"></script>
+<script src="ui9.js?v=20261119r"></script>
 </body>
 </html>

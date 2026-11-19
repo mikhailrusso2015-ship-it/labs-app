@@ -155,22 +155,29 @@
   });
 
   /* ---------- Teléfono: ninguna tabla con scroll lateral; cada fila es una tarjeta que se abre ---------- */
-  function flat(html) { const d = document.createElement('div'); d.innerHTML = String(html).replace(/<(br|\/div|\/p|\/b|\/span)[^>]*>/gi, '$& '); return d.textContent.replace(/\s+/g, ' ').trim(); }
+  function flat(html) { const d = document.createElement('div'); d.innerHTML = String(html).replace(/<(br|\/div|\/p|\/b|\/span)[^>]*>/gi, '$& ').replace(/<(div|p)[\s>]/gi, ' $&'); return d.textContent.replace(/\s+/g, ' ').trim(); }
   A['trow'] = function (v) { const p = v.split(':'); const k = (S.role + '/' + S[S.role]) + '#' + p[0]; S.tro = S.tro || {}; S.tro[k] = S.tro[k] === p[1] ? null : p[1]; window.render(); };
   window.UI_post = function () {
-    const mob = !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches); if (!mob) return;
+    const mob = !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches);
     const app = document.getElementById('app'); if (!app) return; S.tro = S.tro || {};
     Array.prototype.forEach.call(app.querySelectorAll('.tw table'), function (tb, ti) {
       if (tb.closest('.paper-fit') || tb.closest('.sheet')) return;
+      if (!mob && (tb.closest('details.tv') || tb.closest('[data-keep-table]') || tb.querySelector('tbody input, tbody select, tbody textarea'))) return;
       const heads = Array.prototype.map.call(tb.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); }); const key = (S.role + '/' + S[S.role]) + '#' + ti; const openRow = S.tro[key];
-      const wrap = document.createElement('div'); wrap.className = 'tcards';
+      const wrap = document.createElement('div'); wrap.className = 'tcards' + (mob ? '' : ' desk');
       Array.prototype.forEach.call(tb.querySelectorAll('tbody tr'), function (tr, ri) {
         const tds = Array.prototype.slice.call(tr.children); if (!tds.length) return; const first = tds[0]; const b = first.querySelector('b'); const title = flat(first.innerHTML) || '—';
-        const second = tds[1]; const sb = second && second.querySelector('b'); const sub = sb ? sb.textContent.trim() : (second && !second.querySelector('input,button,select,svg') ? flat(second.innerHTML).slice(0, 60) : ''); let chip = ''; for (let i = 1; i < tds.length; i++) { const c = tds[i].querySelector('.chip'); if (c) { chip = c.outerHTML; break; } }
+        const second = tds[1]; const sb = second && second.querySelector('b'); const sub = sb ? flat(sb.innerHTML) : (second && !second.querySelector('input,button,select,svg') ? flat(second.innerHTML).slice(0, 60) : ''); let chip = ''; for (let i = 1; i < tds.length; i++) { const c = tds[i].querySelector('.chip'); if (c) { chip = c.outerHTML; break; } }
         const o = String(ri) === String(openRow); let body = '', acts = '';
         for (let i = 1; i < tds.length; i++) { const lab = heads[i] || ''; const hasBtn = tds[i].querySelector('button'); const onlyBtn = hasBtn && !tds[i].querySelector('input,select') && flat(tds[i].innerHTML).length < 80; if (onlyBtn || /^(acciones?|quitar)$/i.test(lab)) acts += '<div class="tka">' + tds[i].innerHTML + '</div>'; else if (tds[i].innerHTML.trim()) body += '<div class="tkv"><small>' + esc(lab) + '</small><div>' + tds[i].innerHTML + '</div></div>'; }
         const d = document.createElement('div'); d.className = 'acc';
-        d.innerHTML = '<button type="button" class="acch" data-a="trow" data-v="' + ti + ':' + ri + '" aria-expanded="' + o + '"><span class="t">' + esc(title.length > 46 ? title.slice(0, 44) + '…' : title) + (sub && sub !== title ? '<span class="s">' + esc(sub) + '</span>' : '') + '</span>' + chip + '<i class="chev' + (o ? ' open' : '') + '" aria-hidden="true">›</i></button>' + (o ? '<div class="accb tcb">' + body + acts + '</div>' : '');
+        if (mob) d.innerHTML = '<button type="button" class="acch" data-a="trow" data-v="' + ti + ':' + ri + '" aria-expanded="' + o + '"><span class="t">' + esc(title.length > 46 ? title.slice(0, 44) + '…' : title) + (sub && sub !== title ? '<span class="s">' + esc(sub) + '</span>' : '') + '</span>' + chip + '<i class="chev' + (o ? ' open' : '') + '" aria-hidden="true">›</i></button>' + (o ? '<div class="accb tcb">' + body + acts + '</div>' : '');
+        else {
+          /* Computadora: cerrada = lo principal en una línea (número, nombre, fecha y estado); abierta = todo lo demás ordenado */
+          const main = b ? b.textContent.trim() : title; let meta = b ? flat(first.innerHTML).replace(main, '').trim() : '';
+          if (meta.length > 40) meta = meta.slice(0, 38) + '…';
+          d.innerHTML = '<button type="button" class="acch dk" data-a="trow" data-v="' + ti + ':' + ri + '" aria-expanded="' + o + '"><span class="dk1"><b>' + esc(main.length > 60 ? main.slice(0, 58) + '…' : main) + '</b>' + (meta ? '<small>' + esc(meta) + '</small>' : '') + '</span><span class="dk2">' + (sub && sub !== main ? esc(sub) : '') + '</span><span class="dk3">' + chip + '</span><i class="chev' + (o ? ' open' : '') + '" aria-hidden="true">›</i></button>' + (o ? '<div class="accb tcb dkb"><div class="dkg">' + body + '</div>' + (acts ? '<div class="dka">' + acts + '</div>' : '') + '</div>' : '');
+        }
         wrap.appendChild(d);
       });
       tb.parentNode.replaceChild(wrap, tb);

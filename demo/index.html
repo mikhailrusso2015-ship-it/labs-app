@@ -48,6 +48,7 @@ p { margin: 0; }
 .side { flex: 1 1 220px; max-width: 250px; background: linear-gradient(180deg, #5668E0, #3345B5); color: #fff; border-radius: 24px; padding: 18px 12px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 76px; }
 .side .who { padding: 10px 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 6px; }
 .side .who small { display: block; color: #E4E9FF; font-size: 12px; }
+.side { max-height: calc(100vh - 92px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.45) transparent; } .side > * { flex-shrink: 0; }
 .side button { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; background: transparent; color: #fff; text-align: left; font-weight: 500; cursor: pointer; }
 .side button[aria-current="page"] { background: #fff; color: var(--deep); font-weight: 600; }
 .badge { font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 999px; background: var(--warn-bg); color: var(--warn-ink); }
@@ -115,7 +116,7 @@ th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; p
 .spark { display: block; }
 hr { border: 0; border-top: 1px solid var(--line); width: 100%; margin: 4px 0; }
 ul.clean { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
-@media (max-width: 760px) { .side { max-width: none; position: static; flex-direction: row; flex-wrap: wrap; } .side .who { flex: 1 1 100%; } .demo-tag { margin-left: 0; } h1 { font-size: 24px; } }
+@media (max-width: 760px) { .side { max-height: none; overflow: visible; max-width: none; position: static; flex-direction: row; flex-wrap: wrap; } .side .who { flex: 1 1 100%; } .demo-tag { margin-left: 0; } h1 { font-size: 24px; } }
 @media print { body { background: #fff; } body * { visibility: hidden; } .sheet, .sheet * { visibility: visible; } .sheet { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; } }
 .qposter { max-width: 520px; margin: 0 auto; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 28px rgba(20,25,58,.28); background: #EEF1FF; line-height: 0; } .qposter svg { width: 100%; height: auto; display: block; }
 @media print { @page { size: A4; margin: 0; } body * { visibility: hidden; } .qposter, .qposter * { visibility: visible; } .qposter { position: absolute; left: 0; top: 0; width: 100%; max-width: none; border-radius: 0; box-shadow: none; } }
@@ -321,20 +322,20 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 <div id="app"></div>
 <nav id="dock" aria-label="Barra principal" hidden></nav>
 <div id="toast-host" aria-live="polite"></div>
-<script src="data.js?v=20261119p"></script>
-<script src="engine.js?v=20261119p"></script>
-<script src="jsqr.js?v=20261119p"></script>
-<script src="qrgen.js?v=20261119p"></script>
-<script src="qrtools.js?v=20261119p"></script>
-<script src="ui.js?v=20261119p"></script>
-<script src="ui2.js?v=20261119p"></script>
-<script src="ui3.js?v=20261119p"></script>
-<script src="ui4.js?v=20261119p"></script>
-<script src="ui4b.js?v=20261119p"></script>
-<script src="ui5.js?v=20261119p"></script>
-<script src="ui6.js?v=20261119p"></script>
-<script src="ui7.js?v=20261119p"></script>
-<script src="ui8.js?v=20261119p"></script>
-<script src="ui9.js?v=20261119p"></script>
+<script src="data.js?v=20261119q"></script>
+<script src="engine.js?v=20261119q"></script>
+<script src="jsqr.js?v=20261119q"></script>
+<script src="qrgen.js?v=20261119q"></script>
+<script src="qrtools.js?v=20261119q"></script>
+<script src="ui.js?v=20261119q"></script>
+<script src="ui2.js?v=20261119q"></script>
+<script src="ui3.js?v=20261119q"></script>
+<script src="ui4.js?v=20261119q"></script>
+<script src="ui4b.js?v=20261119q"></script>
+<script src="ui5.js?v=20261119q"></script>
+<script src="ui6.js?v=20261119q"></script>
+<script src="ui7.js?v=20261119q"></script>
+<script src="ui8.js?v=20261119q"></script>
+<script src="ui9.js?v=20261119q"></script>
 </body>
 </html>

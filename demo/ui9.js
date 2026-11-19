@@ -387,12 +387,37 @@
     return '<div class="head"><div><h1>QR para tus pacientes</h1><p>Imprímelo y pégalo en tu local. Tus pacientes lo escanean y adelantan su orden mientras esperan.</p></div></div>' +
       '<div class="card"><h2>Cómo funciona</h2><ul class="clean small"><li>El paciente escanea, elige sus exámenes, ve el precio, paga y sube su comprobante.</li><li>Te llega a <b>Atender pacientes → Cobrar la orden</b>. Búscalo por cédula, mira su comprobante y confirma el pago.</li><li>Después solo falta tomar la muestra. Menos fila y menos espera.</li></ul>' +
       '<div class="row"><span class="chip ' + (S.labQr.on ? 'ok' : 'gray') + '">' + (S.labQr.on ? 'Recibiendo órdenes por QR' : 'Apagado') + '</span><span class="chip gray">' + n + (n === 1 ? ' orden por QR' : ' órdenes por QR') + '</span>' + (pend ? '<span class="chip warn">' + pend + ' por confirmar pago</span>' : '') + '</div>' +
-      '<div class="btnrow"><button class="btn" type="button" data-a="qrlab-print">Imprimir cartel</button><button class="btn ghost" type="button" data-a="qrlab-dl">Descargar QR</button><button class="btn ghost" type="button" data-a="qrlab-copy">Copiar código</button><button class="btn ' + (S.labQr.on ? 'warn' : 'ghost') + '" type="button" data-a="qrlab-toggle">' + (S.labQr.on ? 'Apagar órdenes por QR' : 'Activar órdenes por QR') + '</button></div></div>' +
+      '<div class="btnrow"><button class="btn" type="button" data-a="qrlab-print">Imprimir cartel</button><button class="btn ghost" type="button" data-a="qrlab-dl">Descargar cartel con QR</button><button class="btn ghost" type="button" data-a="qrlab-copy">Copiar código</button><button class="btn ' + (S.labQr.on ? 'warn' : 'ghost') + '" type="button" data-a="qrlab-toggle">' + (S.labQr.on ? 'Apagar órdenes por QR' : 'Activar órdenes por QR') + '</button></div></div>' +
       '<div class="card"><h2>Así se ve el cartel</h2>' + poster + '</div>' +
       '<div class="card note"><h2>Cuidados</h2><ul class="clean small"><li>El QR es público y solo lleva al laboratorio. No tiene datos de nadie.</li><li>Ningún examen se hace sin pago confirmado por ti.</li><li>Si lo apagas, el que escanee verá que debe pasar por caja.</li></ul></div>';
   };
   A['qrlab-print'] = function () { try { window.print(); } catch (e) { toast('Aquí no se puede imprimir. En la versión real se imprime o se guarda en PDF.'); } };
-  A['qrlab-dl'] = function () { try { const a = document.createElement('a'); a.href = window.QRT.dataUrl(code(), 900); a.download = 'QR-' + S.labs[0].name.replace(/\W+/g, '-') + '.png'; document.body.appendChild(a); a.click(); a.remove(); toast('QR descargado.'); } catch (e) { toast('No se pudo descargar el QR.'); } };
+  /* Descargar el cartel completo (nombre del laboratorio + QR + pasos) como imagen PNG lista para imprimir */
+  const _b64 = {};
+  function asData(url, mime) { if (_b64[url]) return Promise.resolve(_b64[url]); return fetch(url).then(function (r) { if (!r.ok) throw new Error('x'); return r.blob(); }).then(function (b) { return new Promise(function (ok, no) { const fr = new FileReader(); fr.onload = function () { _b64[url] = fr.result; ok(fr.result); }; fr.onerror = no; fr.readAsDataURL(b); }); }); }
+  function posterStandalone(name, cd) {
+    return Promise.all([asData('brand/logo-rev.svg'), asData('brand/logo-color.svg'), asData('brand/fonts/poppins-500.ttf'), asData('brand/fonts/poppins-700.ttf')]).then(function (a) {
+      let svg = posterSvg(name, cd).replace('class="qpost" ', '').replace('href="brand/logo-rev.svg"', 'href="' + a[0] + '"').replace('href="brand/logo-color.svg"', 'href="' + a[1] + '"');
+      const css = '<style>@font-face{font-family:"PoppinsE";font-weight:500;src:url(' + a[2] + ') format("truetype")}@font-face{font-family:"PoppinsE";font-weight:700;src:url(' + a[3] + ') format("truetype")}</style>';
+      svg = svg.replace('font-family="Poppins, Arial, sans-serif"', 'font-family="PoppinsE, Poppins, Arial, sans-serif"').replace('<defs>', '<defs>' + css);
+      if (svg.indexOf('width="1240"') < 0) svg = svg.replace('<svg ', '<svg width="1240" height="1754" ');
+      return svg;
+    });
+  }
+  function saveBlob(blob, fname) { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 4000); }
+  A['qrlab-dl'] = function () {
+    const lab = S.labs[0]; const base = 'Cartel-QR-' + String(lab.name || 'laboratorio').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\W+/g, '-').replace(/^-|-$/g, '');
+    toast('Preparando el cartel…');
+    posterStandalone(lab.name, code()).then(function (svg) {
+      const img = new Image();
+      img.onload = function () {
+        try { const c = document.createElement('canvas'); c.width = 2480; c.height = 3508; const x = c.getContext('2d'); x.fillStyle = '#EEF1FF'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); c.toBlob(function (b) { if (!b) { saveBlob(new Blob([svg], { type: 'image/svg+xml' }), base + '.svg'); toast('Cartel descargado.'); return; } saveBlob(b, base + '.png'); toast('Cartel descargado. Listo para imprimir en hoja A4.'); }, 'image/png'); }
+        catch (e) { saveBlob(new Blob([svg], { type: 'image/svg+xml' }), base + '.svg'); toast('Cartel descargado.'); }
+      };
+      img.onerror = function () { saveBlob(new Blob([svg], { type: 'image/svg+xml' }), base + '.svg'); toast('Cartel descargado.'); };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }).catch(function () { toast('No se pudo descargar el cartel. Prueba con Imprimir cartel y guarda en PDF.'); });
+  };
   A['qrlab-copy'] = function () { EXT.pm.copyText(code()).then(function (ok) { toast(ok ? 'Código copiado.' : 'No se pudo copiar.'); }); };
   A['qrlab-toggle'] = function () { S.labQr.on = !S.labQr.on; logAudit(S.auth.name, S.labQr.on ? 'Activó las órdenes por QR' : 'Apagó las órdenes por QR'); toast(S.labQr.on ? 'Órdenes por QR activadas.' : 'Órdenes por QR apagadas.'); render(); };
   EXT.nav.lab.splice(Math.max(1, EXT.nav.lab.map(function (n) { return n.id; }).indexOf('atencion') + 1), 0, { id: 'qrlab', label: 'QR para pacientes' });

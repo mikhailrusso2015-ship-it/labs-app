@@ -166,7 +166,7 @@
       const wrap = document.createElement('div'); wrap.className = 'tcards';
       Array.prototype.forEach.call(tb.querySelectorAll('tbody tr'), function (tr, ri) {
         const tds = Array.prototype.slice.call(tr.children); if (!tds.length) return; const first = tds[0]; const b = first.querySelector('b'); const title = flat(first.innerHTML) || '—';
-        const second = tds[1]; const sub = second && !second.querySelector('input,button,select,svg') ? flat(second.innerHTML).slice(0, 60) : ''; let chip = ''; for (let i = 1; i < tds.length; i++) { const c = tds[i].querySelector('.chip'); if (c) { chip = c.outerHTML; break; } }
+        const second = tds[1]; const sb = second && second.querySelector('b'); const sub = sb ? sb.textContent.trim() : (second && !second.querySelector('input,button,select,svg') ? flat(second.innerHTML).slice(0, 60) : ''); let chip = ''; for (let i = 1; i < tds.length; i++) { const c = tds[i].querySelector('.chip'); if (c) { chip = c.outerHTML; break; } }
         const o = String(ri) === String(openRow); let body = '', acts = '';
         for (let i = 1; i < tds.length; i++) { const lab = heads[i] || ''; const hasBtn = tds[i].querySelector('button'); const onlyBtn = hasBtn && !tds[i].querySelector('input,select') && flat(tds[i].innerHTML).length < 80; if (onlyBtn || /^(acciones?|quitar)$/i.test(lab)) acts += '<div class="tka">' + tds[i].innerHTML + '</div>'; else if (tds[i].innerHTML.trim()) body += '<div class="tkv"><small>' + esc(lab) + '</small><div>' + tds[i].innerHTML + '</div></div>'; }
         const d = document.createElement('div'); d.className = 'acc';

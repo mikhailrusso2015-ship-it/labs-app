@@ -116,22 +116,27 @@
     toast('Orden ' + id + ' creada.' + (status === 'Esperando paciente' ? ' Falta que el paciente la confirme en su teléfono.' : ' Cóbrala antes de tomar la muestra.')); S.lab = 'ordenes'; S.ofilter = 'todas'; render(); window.scrollTo(0, 0);
   };
 
+  function patCell(pid) {
+    const p = X.personOf(pid); if (!p) return '—'; const parts = (p.name || '').split(' '); const nom = p.first || parts[0] || '—', ape = p.last || parts.slice(1).join(' ') || '—';
+    const ln = function (k, v) { return '<div class="small"><span class="muted">' + k + ':</span> ' + esc(v || '—') + '</div>'; };
+    return '<b>' + esc(p.name) + '</b>' + ln('Cédula', p.ci) + ln('Teléfono', p.phone) + '<div class="pmore">' + ln('Nombre', nom) + ln('Apellido', ape) + ln('Correo', p.email) + ln('Dirección', p.address) + ln('Edad y sexo', (p.age && p.age !== '—' ? p.age + ' años' : '—') + ' · ' + (p.sex === 'F' ? 'Femenino' : p.sex === 'M' ? 'Masculino' : (p.sex || '—'))) + '</div>';
+  }
   /* ---------- Órdenes ---------- */
   V.ordenes = function () {
     const flt = S.ofilter; const q = F('o-q').trim().toLowerCase();
     const filters = [['todas', 'Todas'], ['esperando', 'Esperando al paciente'], ['proceso', 'Por cargar resultados'], ['enviada', 'Enviadas'], ['sinpago', 'Sin pagar'], ['anulada', 'Anuladas']];
     let list = S.orders.filter(function (o) { return flt === 'todas' ? true : flt === 'esperando' ? o.status === 'Esperando paciente' : flt === 'proceso' ? (o.status === 'Por procesar' || o.status === 'En proceso') : flt === 'enviada' ? o.status === 'Enviada' : flt === 'sinpago' ? (!o.paid && o.status !== 'Anulada') : o.status === 'Anulada'; });
-    if (q) list = list.filter(function (o) { return (o.id + ' ' + pname(o.pid) + ' ' + examNames(o.exams)).toLowerCase().indexOf(q) >= 0; });
+    if (q) list = list.filter(function (o) { const pp = X.personOf(o.pid) || {}; return (o.id + ' ' + pname(o.pid) + ' ' + (pp.ci || '') + ' ' + (pp.phone || '') + ' ' + examNames(o.exams)).toLowerCase().indexOf(q) >= 0; });
     return '<div class="head"><div><h1>Órdenes</h1><p>Todo lo que entra al laboratorio, de la orden al resultado.</p></div><button class="btn" type="button" data-a="nav" data-v="nueva">Nueva orden</button></div>' +
       '<div class="row"><div class="seg" role="group" aria-label="Filtrar órdenes">' + filters.map(function (f) { return '<button type="button" data-a="o-filter" data-v="' + f[0] + '" aria-pressed="' + (flt === f[0]) + '">' + f[1] + '</button>'; }).join('') + '</div></div>' +
-      '<div class="card">' + fld('Buscar por número, paciente o examen', 'o-q', { ph: 'Escribe para filtrar' }) + (list.length ? '<div class="tw"><table style="min-width:860px"><thead><tr><th>Orden</th><th>Paciente</th><th>Exámenes</th><th>Total</th><th>Pago</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function (o) {
+      '<div class="card">' + fld('Buscar por número, paciente, cédula o examen', 'o-q', { ph: 'Escribe para filtrar' }) + (list.length ? '<div class="tw"><table style="min-width:860px"><thead><tr><th>Orden</th><th>Paciente</th><th>Exámenes</th><th>Total</th><th>Pago</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function (o) {
         let acts = '';
         if (!o.paid && o.status !== 'Anulada') acts += '<button class="btn sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar primero</button>';
         if (o.status === 'Esperando paciente') acts += '<button class="btn ghost sm" type="button" data-a="o-remind" data-v="' + o.id + '">Recordar al paciente</button>';
         if (o.paid && (o.status === 'Por procesar' || o.status === 'En proceso') && isOwner()) acts += '<button class="btn sm" type="button" data-a="o-open" data-v="' + o.id + '">' + (o.status === 'En proceso' ? 'Continuar resultados' : 'Cargar resultados') + '</button>';
         if (o.status === 'Enviada') acts += '<button class="btn ghost sm" type="button" data-a="o-view" data-v="' + o.id + '">Ver resultado</button>';
         if (o.status !== 'Enviada' && o.status !== 'Anulada') acts += '<button class="btn ghost sm" type="button" data-a="o-void" data-v="' + o.id + '">Anular</button>';
-        return '<tr><td><b>' + o.id + '</b><div class="small muted">' + esc(o.when) + '</div></td><td>' + esc(pname(o.pid)) + '</td><td class="small">' + (o.pkgs && o.pkgs.length ? '<b>' + esc(o.pkgs.join(' + ')) + '</b><div class="muted">' + o.exams.length + ' exámenes</div>' : esc(examNames(o.exams))) + '</td><td>' + L.fmtUsd(o.usd) + '<div class="small muted">' + L.fmtBs(o.usd * o.rate) + '</div></td><td>' + payChip(o) + '</td><td>' + stChip(o.status) + (o.reason ? '<div class="small muted">' + esc(o.reason) + '</div>' : '') + '</td><td><div class="row">' + acts + '</div></td></tr>';
+        return '<tr><td><b>' + o.id + '</b><div class="small muted">' + esc(o.when) + '</div></td><td>' + patCell(o.pid) + '</td><td class="small">' + (o.pkgs && o.pkgs.length ? '<b>' + esc(o.pkgs.join(' + ')) + '</b><div class="muted">' + o.exams.length + ' exámenes</div>' : esc(examNames(o.exams))) + '</td><td>' + L.fmtUsd(o.usd) + '<div class="small muted">' + L.fmtBs(o.usd * o.rate) + '</div></td><td>' + payChip(o) + '</td><td>' + stChip(o.status) + (o.reason ? '<div class="small muted">' + esc(o.reason) + '</div>' : '') + '</td><td><div class="row">' + acts + '</div></td></tr>';
       }).join('') + '</tbody></table></div>' : '<p class="muted">No hay órdenes con ese filtro.</p>') + (isOwner() ? '' : '<p class="small muted">Recepción crea y cobra órdenes. Solo el bioanalista carga y firma los resultados.</p>') + '</div>';
   };
   A['o-filter'] = function (v) { S.ofilter = v; S.lab = 'ordenes'; render(); window.scrollTo(0, 0); };

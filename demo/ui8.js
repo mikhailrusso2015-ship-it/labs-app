@@ -135,7 +135,7 @@
     claves: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
     registro: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 6H6a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-2M9 12h6M9 16h6"/>'
   };
-  MI.pagos = MI.pagar; MI.ajustes = MI.config;
+  MI.pagos = MI.pagar; MI.ajustes = MI.config; EXT.MI = MI;
   const TINT = [['#E6EAFF', '#3345B5'], ['#EDE7FF', '#5B3BD6'], ['#DDF5EC', '#0B7A55'], ['#FFEBD9', '#B45309'], ['#FDE4EE', '#B8326A']];
   function menuView(role) {
     const sub = (S.auth && S.auth.sub) || 'owner'; const items = EXT.nav[role].filter(function (i) { return !i.only || i.only.indexOf(sub) >= 0; }).filter(function (i) { return i.sep || (!i.hidden && ['inicio', 'menu', 'perfil'].indexOf(i.id) < 0); });

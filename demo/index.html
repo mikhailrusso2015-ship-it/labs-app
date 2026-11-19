@@ -244,6 +244,7 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 .perrow { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; } .perrow b { font-size: 16px; }
 .per { position: relative; display: inline-block; }
 .perbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px 0 14px; border: 0; border-radius: 12px; background: rgba(255,255,255,.55); color: var(--link); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; backdrop-filter: blur(6px); }
+.permenu.l { left: 0; right: auto; min-width: 250px; } .peropt span { white-space: nowrap; }
 .perbtn .chev { font-size: 18px; transform: rotate(90deg); } .perbtn .chev.open { transform: rotate(-90deg); }
 .permenu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 170px; background: #fff; border-radius: 16px; padding: 6px; box-shadow: 0 14px 34px rgba(20,25,58,.28); display: flex; flex-direction: column; }
 .peropt { display: flex; justify-content: space-between; align-items: center; min-height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: none; font: inherit; font-size: 14px; color: #1D2459; cursor: pointer; text-align: left; } .peropt:hover { background: #EEF1FF; } .peropt[aria-selected="true"] { background: #E6EAFF; font-weight: 700; color: var(--link); }
@@ -263,6 +264,9 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 .tcb { gap: 8px; } .tkv { display: flex; flex-direction: column; gap: 2px; } .tkv small { font-size: 12px; color: var(--muted); } .tkv > div { font-size: 14px; overflow-wrap: anywhere; }
 .tka { display: flex; flex-wrap: wrap; gap: 8px; } .tka > .row, .tka .row { display: flex; flex-wrap: wrap; gap: 8px; }
 @media (max-width: 760px) { .tw { overflow-x: visible; } .tcards { width: 100%; } }
+
+.vrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid rgba(51,69,181,.1); } .vrow:first-child { border-top: 0; } .vrow > span { flex: 1; min-width: 0; font-size: 14px; } .vrow small.block { display: block; color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+.pcrow { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 2px; border: 0; border-top: 1px solid rgba(51,69,181,.12); background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; } .pcrow .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .pcrow .t b { font-size: 16px; } .pcrow .s { font-size: 13px; color: var(--muted); } .pcrow .chev { font-style: normal; font-size: 20px; color: var(--link); } .pcrow:active { background: rgba(255,255,255,.4); }
 </style>
 </head>
 <body>
@@ -274,19 +278,20 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 <div id="app"></div>
 <nav id="dock" aria-label="Barra principal" hidden></nav>
 <div id="toast-host" aria-live="polite"></div>
-<script src="data.js?v=20261119b"></script>
-<script src="engine.js?v=20261119b"></script>
-<script src="jsqr.js?v=20261119b"></script>
-<script src="qrgen.js?v=20261119b"></script>
-<script src="qrtools.js?v=20261119b"></script>
-<script src="ui.js?v=20261119b"></script>
-<script src="ui2.js?v=20261119b"></script>
-<script src="ui3.js?v=20261119b"></script>
-<script src="ui4.js?v=20261119b"></script>
-<script src="ui4b.js?v=20261119b"></script>
-<script src="ui5.js?v=20261119b"></script>
-<script src="ui6.js?v=20261119b"></script>
-<script src="ui7.js?v=20261119b"></script>
-<script src="ui8.js?v=20261119b"></script>
+<script src="data.js?v=20261119d"></script>
+<script src="engine.js?v=20261119d"></script>
+<script src="jsqr.js?v=20261119d"></script>
+<script src="qrgen.js?v=20261119d"></script>
+<script src="qrtools.js?v=20261119d"></script>
+<script src="ui.js?v=20261119d"></script>
+<script src="ui2.js?v=20261119d"></script>
+<script src="ui3.js?v=20261119d"></script>
+<script src="ui4.js?v=20261119d"></script>
+<script src="ui4b.js?v=20261119d"></script>
+<script src="ui5.js?v=20261119d"></script>
+<script src="ui6.js?v=20261119d"></script>
+<script src="ui7.js?v=20261119d"></script>
+<script src="ui8.js?v=20261119d"></script>
+<script src="ui9.js?v=20261119d"></script>
 </body>
 </html>

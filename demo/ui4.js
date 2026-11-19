@@ -113,7 +113,7 @@
     S.orders.unshift(o);
     if (status === 'Esperando paciente') notify('pat', 'El ' + S.labs[0].name + ' creó la orden ' + id + ' a tu nombre. Confírmala si es tuya.', { type: 'ordconf', ref: id }, n.pid);
     logAudit(S.auth.name, 'Creó la orden ' + id + (o.paid ? ' (cobrada)' : ' (sin cobrar)')); S.no = { pid: null, via: '', exams: [], pkgs: [] }; ['no-q', 'no-qr', 'no-paid', 'no-method', 'no-cur', 'no-doc'].forEach(clearForm); S.err = {};
-    toast('Orden ' + id + ' creada.' + (status === 'Esperando paciente' ? ' Falta que el paciente la confirme en su teléfono.' : ' Lista para procesar.')); S.lab = 'ordenes'; S.ofilter = 'todas'; render(); window.scrollTo(0, 0);
+    toast('Orden ' + id + ' creada.' + (status === 'Esperando paciente' ? ' Falta que el paciente la confirme en su teléfono.' : ' Cóbrala antes de tomar la muestra.')); S.lab = 'ordenes'; S.ofilter = 'todas'; render(); window.scrollTo(0, 0);
   };
 
   /* ---------- Órdenes ---------- */
@@ -126,10 +126,10 @@
       '<div class="row"><div class="seg" role="group" aria-label="Filtrar órdenes">' + filters.map(function (f) { return '<button type="button" data-a="o-filter" data-v="' + f[0] + '" aria-pressed="' + (flt === f[0]) + '">' + f[1] + '</button>'; }).join('') + '</div></div>' +
       '<div class="card">' + fld('Buscar por número, paciente o examen', 'o-q', { ph: 'Escribe para filtrar' }) + (list.length ? '<div class="tw"><table style="min-width:860px"><thead><tr><th>Orden</th><th>Paciente</th><th>Exámenes</th><th>Total</th><th>Pago</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function (o) {
         let acts = '';
+        if (!o.paid && o.status !== 'Anulada') acts += '<button class="btn sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar primero</button>';
         if (o.status === 'Esperando paciente') acts += '<button class="btn ghost sm" type="button" data-a="o-remind" data-v="' + o.id + '">Recordar al paciente</button>';
-        if ((o.status === 'Por procesar' || o.status === 'En proceso') && isOwner()) acts += '<button class="btn sm" type="button" data-a="o-open" data-v="' + o.id + '">' + (o.status === 'En proceso' ? 'Continuar resultados' : 'Cargar resultados') + '</button>';
+        if (o.paid && (o.status === 'Por procesar' || o.status === 'En proceso') && isOwner()) acts += '<button class="btn sm" type="button" data-a="o-open" data-v="' + o.id + '">' + (o.status === 'En proceso' ? 'Continuar resultados' : 'Cargar resultados') + '</button>';
         if (o.status === 'Enviada') acts += '<button class="btn ghost sm" type="button" data-a="o-view" data-v="' + o.id + '">Ver resultado</button>';
-        if (!o.paid && o.status !== 'Anulada') acts += '<button class="btn ghost sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar</button>';
         if (o.status !== 'Enviada' && o.status !== 'Anulada') acts += '<button class="btn ghost sm" type="button" data-a="o-void" data-v="' + o.id + '">Anular</button>';
         return '<tr><td><b>' + o.id + '</b><div class="small muted">' + esc(o.when) + '</div></td><td>' + esc(pname(o.pid)) + '</td><td class="small">' + (o.pkgs && o.pkgs.length ? '<b>' + esc(o.pkgs.join(' + ')) + '</b><div class="muted">' + o.exams.length + ' exámenes</div>' : esc(examNames(o.exams))) + '</td><td>' + L.fmtUsd(o.usd) + '<div class="small muted">' + L.fmtBs(o.usd * o.rate) + '</div></td><td>' + payChip(o) + '</td><td>' + stChip(o.status) + (o.reason ? '<div class="small muted">' + esc(o.reason) + '</div>' : '') + '</td><td><div class="row">' + acts + '</div></td></tr>';
       }).join('') + '</tbody></table></div>' : '<p class="muted">No hay órdenes con ese filtro.</p>') + (isOwner() ? '' : '<p class="small muted">Recepción crea y cobra órdenes. Solo el bioanalista carga y firma los resultados.</p>') + '</div>';

@@ -312,7 +312,7 @@
 
   /* ---------- Teléfono: menú de botones, una pantalla por opción, botón atrás ---------- */
   function isMob() { return !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches); }
-  const NO_SPLIT = { 'lab/nueva': 1, 'lab/resultado': 1, 'lab/ordenes': 1 };
+  const NO_SPLIT = { 'lab/nueva': 1, 'lab/resultado': 1, 'lab/ordenes': 1, 'lab/pacientes': 1, 'doc/lista': 1 };
   function secTitle(el, n) { const h = el.querySelector('h2,h3'); return h ? h.textContent.replace(/\s+/g, ' ').trim() : 'Sección ' + (n + 1); }
   function sectionize(html, key) {
     if (NO_SPLIT[key] || /\/(inicio|menu|qr)$/.test(key)) return html;
@@ -341,7 +341,7 @@
     }
     const cur = nav.filter(function (i) { return i.id === page; })[0]; const label = cur ? cur.label : '';
     const inner = ok && view ? sectionize(view(), r + '/' + page) : '<div class="card"><h2>Esta pantalla no está disponible para tu rol.</h2></div>';
-    const TOP = { inicio: 1, menu: 1, perfil: 1, ordenes: 1, nueva: r === 'lab' && S.auth.sub === 'recep', lista: r !== 'lab', qr: 1, pagos: 1, labs: 1 }; const sub = (S.sup && (S.sup.open || S.sup.newt)) || (r === 'doc' && S.docOpen !== null && S.docOpen !== undefined) || (r === 'pat' && S.resIdx !== null && S.resIdx !== undefined) || (S.sec && S.sec[r + '/' + page] !== undefined && S.sec[r + '/' + page] !== null);
+    const TOP = { inicio: 1, menu: 1, perfil: 1, ordenes: 1, nueva: r === 'lab' && S.auth.sub === 'recep', lista: r !== 'lab', qr: 1, pagos: 1, labs: 1 }; const sub = (S.sup && (S.sup.open || S.sup.newt)) || (r === 'doc' && S.docOpen !== null && S.docOpen !== undefined) || (r === 'lab' && page === 'pacientes' && !!S.pcOpen) || (r === 'pat' && S.resIdx !== null && S.resIdx !== undefined) || (S.sec && S.sec[r + '/' + page] !== undefined && S.sec[r + '/' + page] !== null);
     const back = !TOP[page] || sub;
     return '<div class="shell mob"><main class="main">' + (back ? '<div class="backbar"><button class="btn ghost sm" type="button" data-a="back">‹ Atrás</button><b>' + esc(label) + '</b></div>' : '') + banner + inner + '</main></div>';
   }
@@ -392,6 +392,7 @@
     if (S.sec && S.sec[k] !== undefined && S.sec[k] !== null) { S.sec[k] = null; render(); window.scrollTo(0, 0); return; }
     if (S.sup && (S.sup.open || S.sup.newt)) { S.sup.open = null; S.sup.newt = false; render(); window.scrollTo(0, 0); return; }
     if (S.role === 'pat' && S.pat === 'lista' && S.resIdx !== null && S.resIdx !== undefined) { S.resIdx = null; render(); window.scrollTo(0, 0); return; }
+    if (S.role === 'lab' && S.lab === 'pacientes' && S.pcOpen) { S.pcOpen = null; render(); window.scrollTo(0, 0); return; }
     if (S.role === 'doc' && S.doc === 'lista' && S.docOpen !== null && S.docOpen !== undefined) { S.docOpen = null; render(); window.scrollTo(0, 0); return; }
     S.hub = false; S[S.role] = S.from === 'menu' ? 'menu' : 'inicio'; S.from = null; S.resIdx = null; render(); window.scrollTo(0, 0);
   };

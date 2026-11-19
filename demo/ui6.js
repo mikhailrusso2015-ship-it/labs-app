@@ -11,7 +11,7 @@
   function needsSample(o) { return o.exams.some(function (e) { return D.BY_ID[e].kind !== 'report'; }); }
   function stChip(s) { return '<span class="chip ' + (s === 'Enviada' ? 'ok' : s === 'Anulada' ? 'crit' : s === 'Esperando paciente' ? 'gray' : 'warn') + '">' + s + '</span>'; }
   function fmtCi(letter, digits) { return letter + '-' + digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
-  const o143 = findOrder('LAB-0143'); if (o143) o143.sample = { type: 'Sangre', code: 'M-0143-1', when: 'Hoy 08:40', by: 'Gabriela Ruiz' };
+  const o143 = findOrder('LAB-0143'); if (o143) o143.paid = true; if (o143) o143.sample = { type: 'Sangre', code: 'M-0143-1', when: 'Hoy 08:40', by: 'Gabriela Ruiz' };
 
   /* ---------- Avance de una orden ---------- */
   function steps(o) {
@@ -25,18 +25,19 @@
   V.atencion = function () {
     const own = isOwner(); const O = S.orders.filter(function (o) { return o.status !== 'Anulada'; }); const live = function (o) { return o.status === 'Por procesar' || o.status === 'En proceso'; };
     const wait = O.filter(function (o) { return o.status === 'Esperando paciente'; });
-    const toSample = O.filter(function (o) { return live(o) && needsSample(o) && !o.sample; });
-    const toLoad = O.filter(function (o) { return live(o) && (!needsSample(o) || o.sample); });
-    const sent = O.filter(function (o) { return o.status === 'Enviada'; }).slice(0, 5); const unpaid = O.filter(function (o) { return !o.paid; });
+    const unpaid = O.filter(function (o) { return !o.paid; });
+    const toSample = O.filter(function (o) { return o.paid && live(o) && needsSample(o) && !o.sample; });
+    const toLoad = O.filter(function (o) { return o.paid && live(o) && (!needsSample(o) || o.sample); });
+    const sent = O.filter(function (o) { return o.status === 'Enviada'; }).slice(0, 5);
     function row(o, btns) { return '<div style="padding:8px 0;border-top:1px solid var(--line)"><div class="row between"><div><b>' + esc(pname(o.pid)) + '</b><div class="small muted">' + o.id + ' · ' + esc(examsShort(o.exams)) + '</div></div><div class="row">' + btns + '</div></div></div>'; }
     function list(arr, fn, empty) { return arr.length ? arr.map(fn).join('') : '<p class="muted small">' + empty + '</p>'; }
-    return '<div class="head"><div><h1>Atender pacientes</h1><p>El camino de cada paciente, de arriba hacia abajo.</p></div></div>' +
-      '<div class="card"><h2>1. Recibir al paciente</h2><p class="small muted">Busca al paciente o regístralo con su nombre, apellido y cédula. Luego crea su orden y cóbrala.</p><div class="row"><button class="btn sm" type="button" data-a="pc-add">Registrar paciente nuevo</button><button class="btn ghost sm" type="button" data-a="nav" data-v="pacientes">Ver mis pacientes</button><button class="btn ghost sm" type="button" data-a="nav" data-v="nueva">Nueva orden</button></div></div>' +
-      '<div class="card"><h2>2. Esperando al paciente (' + wait.length + ')</h2>' + list(wait, function (o) { return row(o, '<button class="btn ghost sm" type="button" data-a="o-remind" data-v="' + o.id + '">Recordar</button>'); }, 'Nadie está esperando confirmar su orden.') + '</div>' +
+    return '<div class="head"><div><h1>Atender pacientes</h1><p>El camino de cada paciente, de arriba hacia abajo. Primero se cobra y después se toma la muestra.</p></div></div>' +
+      '<div class="card"><h2>1. Recibir al paciente</h2><p class="small muted">Busca al paciente o regístralo con su nombre, apellido y cédula. Luego crea su orden.</p><div class="row"><button class="btn sm" type="button" data-a="pc-add">Registrar paciente nuevo</button><button class="btn ghost sm" type="button" data-a="nav" data-v="pacientes">Ver mis pacientes</button><button class="btn ghost sm" type="button" data-a="nav" data-v="nueva">Nueva orden</button></div></div>' +
+      '<div class="card"><h2>2. Cobrar la orden (' + unpaid.length + ')</h2><p class="small muted">El paciente paga antes de que le tomen la muestra.</p>' + list(unpaid, function (o) { return row(o, '<span class="small muted">' + L.fmtUsd(o.usd) + '</span><button class="btn sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar</button>'); }, 'Todo está cobrado.') + '</div>' +
       '<div class="card"><h2>3. Tomar la muestra (' + toSample.length + ')</h2>' + list(toSample, function (o) { return row(o, '<button class="btn sm" type="button" data-a="o-sample" data-v="' + o.id + '">Tomar muestra</button>'); }, 'No hay muestras por tomar.') + '</div>' +
       '<div class="card"><h2>4. Cargar resultados (' + toLoad.length + ')</h2>' + list(toLoad, function (o) { return row(o, own ? '<button class="btn sm" type="button" data-a="o-open" data-v="' + o.id + '">Cargar resultados</button>' : '<span class="chip gray">Lo carga el bioanalista</span>'); }, 'No hay resultados por cargar.') + (own ? '' : '<p class="small muted">Solo el bioanalista revisa, firma y envía.</p>') + '</div>' +
       '<div class="card"><h2>5. Enviados</h2>' + list(sent, function (o) { const lo = (X.personOf(o.pid) || {}).labOnly; return row(o, (lo ? '<span class="chip warn">Entrega impresa</span>' : '<span class="chip ok">En su teléfono</span>') + '<button class="btn ghost sm" type="button" data-a="o-view" data-v="' + o.id + '">Ver / imprimir</button>'); }, 'Todavía no hay resultados enviados.') + '</div>' +
-      '<div class="card"><h2>6. Cobros pendientes (' + unpaid.length + ')</h2>' + list(unpaid, function (o) { return row(o, '<button class="btn sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar</button>'); }, 'Todo está cobrado.') + '</div>';
+      '<div class="card"><h2>Esperando que el paciente confirme (' + wait.length + ')</h2>' + list(wait, function (o) { return row(o, '<button class="btn ghost sm" type="button" data-a="o-remind" data-v="' + o.id + '">Recordar</button>'); }, 'Nadie está esperando confirmar su orden.') + '</div>';
   };
   EXT.nav.lab.splice(1, 0, { id: 'atencion', label: 'Atender pacientes' });
   EXT.nav.lab.forEach(function (i) { if (i.id === 'pacientes') i.label = 'Mis pacientes'; });
@@ -46,7 +47,8 @@
     const o = findOrder(v); S.sampleGo = !!gate;
     dlg('Toma de muestra · ' + o.id, '<p><b>' + esc(pname(o.pid)) + '</b></p><p class="small muted">' + esc(examsShort(o.exams)) + '</p>' + (gate ? '<p class="small">Antes de cargar los resultados hay que anotar la muestra.</p>' : '') + fld('Tipo de muestra', 'sm-type', { type: 'select', options: ['Sangre', 'Orina', 'Heces', 'Esputo', 'Hisopado', 'Otra'] }) + fld('Confirmo que la muestra está rotulada con el nombre del paciente', 'sm-ok', { type: 'checkbox' }) + errBox('sm'), { label: 'Guardar muestra', a: 'o-sample-ok', v: v });
   }
-  A['o-sample'] = function (v) { sampleDlg(v, false); };
+  function payFirst(v) { const o = findOrder(v); dlg('Primero hay que cobrar', '<p><b>' + esc(pname(o.pid)) + '</b> · ' + o.id + '</p><p>En el laboratorio se cobra antes de tomar la muestra. Cobra la orden y luego sigue.</p><p>Total: <b>' + L.fmtUsd(o.usd) + '</b></p>', { label: 'Cobrar ahora', a: 'o-pay', v: v }); }
+  A['o-sample'] = function (v) { const o = findOrder(v); if (o && !o.paid) return payFirst(v); sampleDlg(v, false); };
   A['o-sample-ok'] = function (v) {
     if (!F('sm-ok')) return setErr('sm', 'Marca la casilla para confirmar que la muestra está rotulada.');
     const o = findOrder(v); o.sample = { type: F('sm-type', 'Sangre'), code: 'M-' + o.id.slice(-4) + '-1', when: X.when(), by: S.auth.name }; if (o.status === 'Por procesar') o.status = 'En proceso';
@@ -54,7 +56,7 @@
     if (S.sampleGo && isOwner()) { S.sampleGo = false; const o0 = A['o-open0']; return o0(v); } render();
   };
   A['o-open0'] = A['o-open'];
-  A['o-open'] = function (v) { const o = findOrder(v); if (o && o.status !== 'Enviada' && needsSample(o) && !o.sample) return sampleDlg(v, true); A['o-open0'](v); };
+  A['o-open'] = function (v) { const o = findOrder(v); if (o && o.status !== 'Enviada' && o.status !== 'Anulada' && !o.paid) return payFirst(v); if (o && o.status !== 'Enviada' && needsSample(o) && !o.sample) return sampleDlg(v, true); A['o-open0'](v); };
 
   /* ---------- Registro de pacientes del laboratorio ---------- */
   S.pseq = S.pseq || 100;

@@ -134,3 +134,12 @@ Cada orden muestra su avance: Paciente, Orden y cobro, Confirmación, Muestra, R
 **Pagos con QR:** el laboratorio sube un QR por método de pago. El paciente lo toca, se abre en su ventana con "Descargar QR" y "Escanear QR". Si espera resultados de varios laboratorios, en "Cómo pagar" elige primero el laboratorio.
 
 **Plan:** un solo plan de $20 al mes.
+
+## 10. Cambios de esta ronda (teléfono primero)
+
+- **Catálogo y precios**: categorías que se abren y cierran; cada examen es una tarjeta que se abre al tocar su nombre (precio, costo, ganancia, moneda, entrega, quitar). Botones nuevos, más finos.
+- **Selectores como pestañita desplegable** (misma idea en los tres): período del resumen (Hoy, Semana, Mes…), moneda para ver precios (Dólares, Bs·BCV, Bs·USDT, tasa propia) y tipo de orden en Órdenes (solo en teléfono).
+- **Menú** rediseñado en filas con ícono. En teléfono las tablas son tarjetas que se abren al tocar: no hay scroll lateral. En PC no hay barra inferior, solo el menú lateral.
+- **Atender pacientes** (laboratorio): 1 Recibir, 2 Cobrar, 3 Tomar la muestra, 4 Cargar resultados, 5 Enviados. **Primero se cobra y después se toma la muestra** (así funciona en Venezuela). Sin cobro no se puede tomar la muestra ni cargar resultados.
+- **Mis pacientes** (laboratorio): lista simple; al tocar un nombre se abre su pantalla con Nueva orden, Historial, Ver cédula, Nota, Corregir y Borrar, más botón Atrás.
+- **Médico → Mis pacientes → paciente**: cada examen va por separado (se abre al tocar). Desde ahí el médico puede **pedir repetir** un examen, **pedir otro examen** según el resultado y **recetar tratamiento** (varios medicamentos, dosis, cada cuánto, días, indicaciones). El paciente recibe un aviso en el teléfono, ve “Tu médico te pidió” en su Inicio y las recetas en **Menú → Mis recetas**.

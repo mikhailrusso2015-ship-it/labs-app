@@ -149,3 +149,12 @@ Cada orden muestra su avance: Paciente, Orden y cobro, Confirmación, Muestra, R
 - **Selectores de pestañas en teléfono**: todos pasan a ser una sola pestañita desplegable (Soporte técnico, Mi perfil del paciente y del médico, opciones del QR del médico, además de período, moneda y tipo de orden). En PC siguen como botones. Cualquier selector nuevo hecho con la clase `seg` se convierte solo.
 - **Pie "BY INSANITY MEDIA LLC® · All rights reserved"** en la pantalla de entrada, en Configuración y en Ajustes de LABS.
 - **Órdenes**: al abrir una orden se ve la ficha completa del paciente (nombre, apellido, cédula, teléfono, correo, dirección, edad y sexo).
+
+## 11. Ronda final de afinación (19 nov)
+
+- **Médico, identidad siempre visible:** nombre, apellido y MPPS no se pueden dejar vacíos ni ocultar; los ven laboratorios y pacientes en recetas, pedidos, solicitudes y accesos. En "Mi perfil" son obligatorios.
+- **Médico, nuevas pantallas:** *Firma y sello* (receta), *Carnet del Colegio de Médicos* (foto, solo la ve LABS) y *Cobro de consultas* (precio y métodos de pago; el paciente los ve en "Cómo pagar").
+- **Laboratorio, QR para pacientes** (menú "QR para pacientes", también en Configuración): cartel imprimible, descargar QR, copiar código, encender/apagar.
+- **Paciente, "Ordenar en el laboratorio"** (escanea el QR del local o botón en Inicio): elige paquetes y exámenes, ve el precio en $ y Bs, paga y **sube su comprobante** (o paga en caja), y recibe el texto para decir en caja: nombre y cédula.
+- **Laboratorio, cobro con comprobante:** en "Atender pacientes → Cobrar" se busca por cédula; la orden hecha por QR trae el comprobante ("Ver comprobante → Confirmar pago"). Sin pago confirmado no se toma la muestra.
+- **Diseño:** filas de selección (nombre a la izquierda, precio aparte a la derecha, check), paquetes plegables, "Nueva orden" en orden 1-2-3, pie de autor siempre al final, pantalla de inicio rediseñada (marca, mensaje, tarjeta de acceso y botones con ícono por tipo de usuario).

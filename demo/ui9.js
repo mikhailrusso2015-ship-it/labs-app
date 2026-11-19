@@ -2,7 +2,7 @@
 (function () {
   const L = window.LABS, D = window.LABSDATA, S = window.S, U = window.UI, EXT = window.EXT, X = EXT.fn, A = EXT.actions, V = EXT.views;
   const logAudit = U.logAudit, esc = U.esc, toast = U.toast, F = X.F, fld = X.fld, errBox = X.errBox, dlg = X.dlg, closeDlg = X.closeDlg, notify = X.notify, chipFor = U.chipFor;
-  const DOC = 'Dra. Marisol Pérez';
+  const DOC = S.docProfile.name;
   function render() { window.render(); }
   function pname(pid) { const d = (S.docPatients || []).filter(function (x) { return x.pid === pid; })[0]; if (d) return d.name; const p = X.personOf(pid); return p ? p.name : 'el paciente'; }
   function pfirst(pid) { return pname(pid); }
@@ -58,7 +58,7 @@
   function sendOrder(kind, pid, names) {
     const id = 'DR-' + String(++seq.o + 1).padStart(4, '0'); const reason = F('dx-reason', REASONS[0]), when = F('dx-when', WHEN[0]), note = F('dx-note').trim(), ayuno = !!F('dx-ayuno');
     S.docOrders.push({ id: id, pid: pid, kind: kind, exams: names, reason: reason, note: note, when: when, ayuno: ayuno, created: 'Hoy', state: 'Pendiente' });
-    const txt = DOC + (kind === 'repetir' ? ' te pidió repetir: ' : ' te pidió hacerte: ') + names.join(', ') + '. ' + (kind === 'repetir' ? 'Motivo: ' + reason.toLowerCase() + '. ' : '') + 'Cuándo: ' + when.toLowerCase() + '.' + (ayuno ? ' Ve en ayunas.' : '') + (note ? ' Nota: ' + note : '');
+    const txt = window.DOCP() + (kind === 'repetir' ? ' te pidió repetir: ' : ' te pidió hacerte: ') + names.join(', ') + '. ' + (kind === 'repetir' ? 'Motivo: ' + reason.toLowerCase() + '. ' : '') + 'Cuándo: ' + when.toLowerCase() + '.' + (ayuno ? ' Ve en ayunas.' : '') + (note ? ' Nota: ' + note : '');
     notify('pat', txt, { type: 'go', ref: 'inicio' }, pid); X.logAudit && X.logAudit(DOC, 'Pidió ' + (kind === 'repetir' ? 'repetir' : 'hacer') + ' exámenes a un paciente');
     ['dx-reason', 'dx-when', 'dx-note', 'dx-ayuno'].forEach(function (k) { delete S.f[k]; }); S.err = {}; S.modal = null;
     toast('Enviado. ' + pfirst(pid) + ' recibió una notificación en su teléfono: “' + names.join(', ') + '”.');
@@ -106,7 +106,7 @@
     if (!S.dm.saved) { S.err.rx = 'Primero carga y guarda tu firma y tu sello. Sin eso el récipe no es válido.'; return rxDlg(); }
     if (medFilled() && !pushMed()) return rxDlg(); if (!S.rxd.length) { S.err.rx = 'Agrega al menos un medicamento.'; return rxDlg(); } const dx = F('rx-dx').trim(); if (dx.length < 3) { S.err.rx = 'Escribe el motivo o diagnóstico.'; return rxDlg(); }
     const id = 'RX-' + String(++seq.r + 100).padStart(4, '0'); S.rx.push({ id: id, pid: S.rxPid, dx: dx, note: F('rx-note').trim(), meds: S.rxd.slice(), created: 'Hoy', date: X.longDate(), doctor: DOC, mpps: '12345', sign: S.dm.sign, stamp: S.dm.stamp });
-    notify('pat', DOC + ' te envió un récipe firmado y sellado (' + S.rxd.length + (S.rxd.length === 1 ? ' medicamento' : ' medicamentos') + '). Míralo en Mis recetas.', { type: 'go', ref: 'recetas' }, S.rxPid);
+    notify('pat', window.DOCP() + ' te envió un récipe firmado y sellado (' + S.rxd.length + (S.rxd.length === 1 ? ' medicamento' : ' medicamentos') + '). Míralo en Mis recetas.', { type: 'go', ref: 'recetas' }, S.rxPid);
     const n = S.rxd.length; S.rxd = []; ['rx-dx', 'rx-note'].forEach(function (k) { delete S.f[k]; }); S.err = {}; S.modal = null; toast('Récipe enviado con tu firma y tu sello. ' + pfirst(S.rxPid) + ' recibió una notificación en su teléfono (' + n + (n === 1 ? ' medicamento' : ' medicamentos') + ').');
   };
 
@@ -125,11 +125,11 @@
   V.pat.inicio = function () {
     const pid = X.myPid(); const ords = S.docOrders.filter(function (o) { return o.pid === pid && o.state === 'Pendiente'; }); const rxs = S.rx.filter(function (r) { return r.pid === pid; });
     let extra = '';
-    if (ords.length) extra += '<div class="card"><h2>Tu médico te pidió</h2>' + ords.map(function (o) { return '<div class="vrow"><span><b>' + (o.kind === 'repetir' ? 'Repetir' : 'Hacerte') + ':</b> ' + esc(o.exams.join(', ')) + '<small class="block">' + esc(o.when) + (o.ayuno ? ' · en ayunas' : '') + (o.note ? ' · ' + esc(o.note) : '') + '</small></span><button class="btn ghost sm" type="button" data-a="po-done" data-v="' + o.id + '">Ya me lo hice</button></div>'; }).join('') + '<p class="small muted">Ve a tu laboratorio con tu QR. Ellos arman la orden.</p></div>';
+    if (ords.length) extra += '<div class="card"><h2>Tu médico te pidió</h2><p class="small"><b>' + esc(S.docProfile.name) + '</b> · MPPS ' + esc(S.docProfile.mpps) + '</p>' + ords.map(function (o) { return '<div class="vrow"><span><b>' + (o.kind === 'repetir' ? 'Repetir' : 'Hacerte') + ':</b> ' + esc(o.exams.join(', ')) + '<small class="block">' + esc(o.when) + (o.ayuno ? ' · en ayunas' : '') + (o.note ? ' · ' + esc(o.note) : '') + '</small></span><button class="btn ghost sm" type="button" data-a="po-done" data-v="' + o.id + '">Ya me lo hice</button></div>'; }).join('') + '<p class="small muted">Ve a tu laboratorio con tu QR. Ellos arman la orden.</p></div>';
     if (rxs.length) extra += '<div class="card"><div class="row between"><h2>Mi última receta</h2><button class="btn ghost sm" type="button" data-a="nav" data-v="recetas">Ver todas</button></div>' + rxs[rxs.length - 1].meds.map(function (m) { return '<div class="vrow"><span><b>' + esc(m.name) + '</b> · ' + esc(m.dose) + '<small class="block">' + esc(m.freq) + ' · ' + esc(m.days) + '</small></span></div>'; }).join('') + '</div>';
     const h = pi0(); const k = h.indexOf('<div class="grid">'); const e = k >= 0 ? h.indexOf('</div></div>', h.indexOf('</div>', k)) : -1; return extra ? h.replace(/(<div class="card dark dashhero">[\s\S]*?<\/div><\/div>|<div class="card dark dashhero">[\s\S]*?<\/div>)/, function (m) { return m + extra; }) : h;
   };
-  A['po-done'] = function (v) { const o = S.docOrders.filter(function (x) { return x.id === v; })[0]; if (o) { o.state = 'Hecho'; notify('doc', pname(o.pid) .split(' ')[0] + ' marcó como hecho: ' + o.exams.join(', ') + '.', { type: 'go', ref: 'lista' }); } toast('Listo. Tu médico verá que ya te lo hiciste.'); render(); };
+  A['po-done'] = function (v) { const o = S.docOrders.filter(function (x) { return x.id === v; })[0]; if (o) { o.state = 'Hecho'; notify('doc', pname(o.pid).split(' ')[0] + ' marcó como hecho: ' + o.exams.join(', ') + '.', { type: 'go', ref: 'lista' }); } toast('Listo. Tu médico verá que ya te lo hiciste.'); render(); };
 
   /* ---------- Órdenes (teléfono): filtro como pestañita desplegable ---------- */
   const FIL = [['todas', 'Todas'], ['esperando', 'Esperando al paciente'], ['proceso', 'Por cargar resultados'], ['enviada', 'Enviadas'], ['sinpago', 'Sin pagar'], ['anulada', 'Anuladas']];
@@ -258,5 +258,181 @@
   /* ---------- Pie de autor ---------- */
   const BYLINE = '<p class="byline">BY INSANITY MEDIA LLC<sup>®</sup> · All rights reserved</p>';
   [[V.lab, 'config'], [V.lab, 'suscripcion'], [EXT.views.adm, 'ajustes']].forEach(function (x) { const f0 = x[0][x[1]]; if (f0) x[0][x[1]] = function () { return f0() + BYLINE; }; });
+
+  /* ---------- Datos del médico: siempre visibles, no se pueden ocultar ---------- */
+  const DP = S.docProfile; DP.carnet = ''; DP.colegio = ''; DP.cnum = ''; DP.csaved = false;
+  S.docConsult = { price: '25', mode: 'Videollamada o chat', saved: true };
+  S.pm.doc = [
+    { id: 'dm1', name: 'Pago móvil', on: true, qr: null, f: [{ k: 'Banco', v: 'Banesco' }, { k: 'Teléfono', v: '0414-5550730' }, { k: 'Cédula', v: 'V-11.050.730' }] },
+    { id: 'dm2', name: 'Zelle', on: true, qr: null, f: [{ k: 'Correo', v: 'doc@demo.com' }, { k: 'Titular', v: 'Marisol Pérez' }] }
+  ];
+  const perfil0 = EXT.views.doc.perfil;
+  function docChecks() {
+    const d = S.docProfile; const row = function (ok, t, go, lab) { return '<div class="vrow"><span>' + t + '</span>' + (ok ? '<span class="chip ok">Listo</span>' : '<button class="btn sm" type="button" data-a="nav" data-v="' + go + '">' + lab + '</button>') + '</div>'; };
+    return '<div class="card"><h2>Mi perfil de médico</h2>' + row(S.dm.saved, 'Firma y sello', 'firma', 'Cargar') + row(d.csaved, 'Carnet del Colegio de Médicos', 'carnet', 'Cargar') + row(S.pm.doc.some(function (m) { return m.on; }), 'Cobro de consultas', 'cobros', 'Configurar') + '</div>';
+  }
+  EXT.views.doc.perfil = function () {
+    const tab = S.prof || 'datos'; if (tab !== 'datos') return perfil0(); const d = S.docProfile;
+    const tabs = [['datos', 'Mis datos'], ['seguridad', 'Seguridad'], ['avisos', 'Avisos']];
+    return '<div class="head"><div><h1>Mi perfil</h1><p>' + esc(d.name) + ' · MPPS ' + esc(d.mpps) + '</p></div></div><div class="seg" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-a="prof-tab" data-v="' + t[0] + '" aria-pressed="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="card"><h2>Mis datos</h2><div class="banner" role="note"><b>Siempre visibles.</b> Tu nombre, tu apellido y tu número de MPPS los ven los laboratorios y los pacientes en cada receta, pedido, solicitud y acceso. No se pueden ocultar ni dejar vacíos.</div>' +
+      fld('Nombres', 'dp-first', { def: d.first }) + fld('Apellidos', 'dp-last', { def: d.last }) + fld('N.º de MPPS (licencia médica)', 'dp-mpps', { def: d.mpps, ro: true }) + fld('Especialidad', 'dp-esp', { def: d.esp }) + fld('Teléfono', 'dp-phone', { def: d.phone, type: 'tel', mode: 'tel' }) +
+      '<div class="row"><span class="chip ok">MPPS verificado</span></div>' + errBox('dpf') + '<div class="row"><button class="btn" type="button" data-a="d-save">Guardar</button></div></div>' + docChecks();
+  };
+  A['d-save'] = function () {
+    const d = S.docProfile; const fi = F('dp-first', d.first).trim().replace(/\s+/g, ' '), la = F('dp-last', d.last).trim().replace(/\s+/g, ' ');
+    if (fi.length < 2) return X.setErr('dpf', 'El nombre es obligatorio. Los laboratorios y los pacientes siempre lo ven.'); if (la.length < 2) return X.setErr('dpf', 'El apellido es obligatorio. Los laboratorios y los pacientes siempre lo ven.');
+    if (!d.mpps) return X.setErr('dpf', 'El número de MPPS es obligatorio y no se puede quitar.');
+    const ph = F('dp-phone', d.phone).replace(/\D/g, ''); if (!/^04\d{9}$/.test(ph)) return X.setErr('dpf', 'El teléfono debe tener 11 números y empezar por 04.');
+    d.first = fi; d.last = la; d.name = d.title + ' ' + fi + ' ' + la; d.esp = F('dp-esp', d.esp).trim() || d.esp; d.phone = ph; S.auth.name = d.name; S.err = {};
+    S.access.forEach(function (a) { a.doc = d.name; a.mpps = d.mpps; }); toast('Datos guardados. Tu nombre, apellido y MPPS se muestran siempre.'); render();
+  };
+
+  /* ---------- Carnet del Colegio de Médicos ---------- */
+  const COLEGIOS = ['Colegio de Médicos del Estado Carabobo', 'Colegio de Médicos del Distrito Metropolitano', 'Colegio de Médicos del Estado Miranda', 'Colegio de Médicos del Estado Aragua', 'Colegio de Médicos del Estado Zulia', 'Colegio de Médicos del Estado Lara', 'Colegio de Médicos del Estado Anzoátegui', 'Colegio de Médicos del Estado Bolívar', 'Colegio de Médicos del Estado Táchira', 'Colegio de Médicos del Estado Mérida', 'Otro colegio'];
+  function carnetSample() {
+    const c = document.createElement('canvas'); c.width = 860; c.height = 540; const g = c.getContext('2d');
+    const bg = g.createLinearGradient(0, 0, 860, 540); bg.addColorStop(0, '#eef2ff'); bg.addColorStop(1, '#cfd8ff'); g.fillStyle = bg; g.fillRect(0, 0, 860, 540);
+    g.fillStyle = '#2c3ba8'; g.fillRect(0, 0, 860, 96); g.fillStyle = '#fff'; g.font = '700 28px Poppins, sans-serif'; g.textAlign = 'center'; g.fillText('COLEGIO DE MÉDICOS', 430, 44); g.font = '500 20px Poppins, sans-serif'; g.fillText('CARNET DE AFILIACIÓN (EJEMPLO)', 430, 76);
+    g.fillStyle = '#aab6f0'; g.fillRect(50, 140, 200, 250); g.fillStyle = '#7d8cdb'; g.beginPath(); g.arc(150, 230, 48, 0, 7); g.fill(); g.fillRect(90, 290, 120, 100);
+    g.textAlign = 'left'; g.fillStyle = '#14193A'; g.font = '700 34px Poppins, sans-serif'; g.fillText(S.docProfile.name, 290, 190); g.font = '500 24px Poppins, sans-serif'; g.fillText('Médico cirujano · ' + S.docProfile.esp, 290, 238); g.fillText('MPPS N.º ' + S.docProfile.mpps, 290, 286); g.fillText('Colegiatura N.º 00000', 290, 334);
+    g.font = '500 18px Poppins, sans-serif'; g.fillStyle = '#3A4470'; g.fillText('Imagen de ejemplo para la demostración', 290, 430); return c;
+  }
+  S.dk = { img: '', msg: '' };
+  function carnetFromCanvas(cv) { S.dk.img = cv.toDataURL('image/jpeg', 0.82); }
+  V.doc.carnet = function () {
+    const d = S.docProfile, k = S.dk;
+    return '<div class="head"><div><h1>Carnet del Colegio de Médicos</h1><p>Sube una foto de tu carnet. Sirve para verificar que eres médico. Solo la ve LABS.</p></div></div>' +
+      '<div class="card"><h2>1. Foto del carnet</h2><div class="drop"><p>Foto de frente, con buena luz, que se lea tu nombre y tu número.</p><div class="row" style="justify-content:center"><label class="btn" style="display:inline-flex;align-items:center;cursor:pointer">Subir foto<input type="file" accept="image/jpeg,image/png" data-c="dcarnet" class="sr"></label><button class="btn ghost" type="button" data-a="dk-sample">Probar con un carnet de ejemplo</button></div></div>' + (k.msg ? '<p class="small" role="status"><b>' + esc(k.msg) + '</b></p>' : '') + (k.img ? '<img src="' + k.img + '" alt="Foto del carnet" style="width:100%;border-radius:14px">' : '<p class="muted small">Aquí aparece la foto de tu carnet.</p>') + '</div>' +
+      '<div class="card"><h2>2. Datos del colegio</h2>' + fld('Colegio de Médicos', 'dk-col', { type: 'select', options: COLEGIOS, def: d.colegio || COLEGIOS[0] }) + fld('N.º de colegiatura', 'dk-num', { def: d.cnum, ph: 'Ej.: 12345' }) + fld('Confirmo que es mi carnet', 'dk-own', { type: 'checkbox' }) + errBox('dk') +
+      '<div class="row"><button class="btn" type="button" data-a="dk-save">Guardar carnet</button></div>' + (d.csaved ? '<p class="small up"><b>Guardado.</b> LABS lo revisa para confirmar tu MPPS.</p>' : '') + '</div>' +
+      '<div class="card note"><h2>Qué se muestra y qué no</h2><ul class="clean small"><li>Los pacientes y los laboratorios ven siempre tu nombre, apellido y MPPS.</li><li>La foto del carnet solo la ve el equipo de LABS para verificarte.</li><li>No se comparte con laboratorios ni pacientes.</li></ul></div>';
+  };
+  A['dk-sample'] = function () { try { carnetFromCanvas(carnetSample()); S.dk.msg = 'Carnet de ejemplo cargado.'; } catch (e) { S.dk.msg = 'No se pudo cargar el ejemplo.'; } render(); };
+  A['dk-save'] = function () {
+    const d = S.docProfile; if (!S.dk.img) return X.setErr('dk', 'Sube primero la foto de tu carnet.'); const n = F('dk-num', d.cnum).trim(); if (n.length < 3) return X.setErr('dk', 'Escribe tu número de colegiatura.'); if (!F('dk-own')) return X.setErr('dk', 'Marca la casilla para confirmar que es tu carnet.');
+    d.carnet = S.dk.img; d.colegio = F('dk-col', COLEGIOS[0]); d.cnum = n; d.csaved = true; S.err = {}; logAudit(d.name, 'El médico cargó la foto de su carnet del Colegio de Médicos'); toast('Carnet guardado. LABS lo revisa.'); render();
+  };
+  document.addEventListener('change', function (ev) {
+    const t = ev.target; if (!t.getAttribute || t.getAttribute('data-c') !== 'dcarnet') return; const f = t.files && t.files[0]; if (!f) return; S.dk.msg = 'Procesando la foto…'; render();
+    L.loadImageFromFile(f, 1400).then(function (cv) { carnetFromCanvas(cv); S.dk.msg = 'Foto cargada. Revisa que se lea bien.'; render(); }).catch(function () { S.dk.msg = 'No se pudo abrir esa imagen. Usa una foto JPG o PNG.'; render(); });
+  });
+
+  /* ---------- Cobro de consultas del médico ---------- */
+  V.doc.cobros = function () {
+    const c = S.docConsult;
+    return '<div class="head"><div><h1>Cobro de consultas</h1><p>Si atiendes a un paciente por la aplicación, así te paga.</p></div></div>' +
+      '<div class="card"><h2>Mi consulta por la app</h2>' + fld('Precio de la consulta (dólares)', 'dc-price', { def: c.price, type: 'text', mode: 'decimal', ph: 'Ej.: 25' }) + fld('Cómo la atiendo', 'dc-mode', { type: 'select', options: ['Videollamada o chat', 'Solo videollamada', 'Solo chat'], def: c.mode }) + errBox('dc') + '<div class="row"><button class="btn" type="button" data-a="dc-save">Guardar</button></div><p class="small muted">Tu paciente ve el precio y tus datos de pago en su pantalla “Cómo pagar”. Paga directo a ti y te envía el comprobante.</p></div>' +
+      '<div class="card"><h2>Mis métodos de pago</h2><p class="small muted">Tus pacientes ven solo los métodos activos. LABS no toca tu dinero.</p>' + EXT.pm.methodsView('doc', true) + '<div class="row"><button class="btn" type="button" data-a="pm-add" data-v="doc">Agregar método de pago</button></div></div>';
+  };
+  A['dc-save'] = function () { const p = parseFloat(String(F('dc-price', S.docConsult.price)).replace(',', '.')); if (!(p > 0) || p > 500) return X.setErr('dc', 'Escribe un precio entre 1 y 500 dólares.'); S.docConsult.price = String(Math.round(p * 100) / 100); S.docConsult.mode = F('dc-mode', S.docConsult.mode); S.err = {}; toast('Consulta guardada: $ ' + S.docConsult.price + '.'); render(); };
+  const navDoc = EXT.nav.doc; const fi = navDoc.map(function (n) { return n.id; }).indexOf('firma') + 1;
+  navDoc.splice(fi, 0, { id: 'carnet', label: 'Carnet del colegio' }, { id: 'cobros', label: 'Cobro de consultas' });
+  if (EXT.MI) { EXT.MI.carnet = '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.8 5.4-1.8 6 0M14 10h4M14 14h4"/>'; EXT.MI.cobros = EXT.MI.pagar || EXT.MI.pagos; }
+
+  /* ---------- Paciente: consulta con mi médico (cómo pagar) ---------- */
+  const pagar0 = V.pat.pagar;
+  V.pat.pagar = function () {
+    const h = pagar0(); const c = S.docConsult; const d = S.docProfile; const on = S.pm.doc.some(function (m) { return m.on; });
+    const card = '<div class="card"><h2>Consulta con mi médico</h2><p><b>' + esc(d.name) + '</b> · MPPS ' + esc(d.mpps) + '<br><span class="small muted">' + esc(d.esp) + ' · ' + esc(c.mode) + '</span></p><div class="row"><span class="chip ok">Consulta $ ' + esc(c.price) + '</span></div>' + (on ? '<p class="small muted">Paga a estos datos y envíale el comprobante a tu médico.</p>' + EXT.pm.methodsView('doc', false) : '<p class="muted small">Tu médico todavía no ha activado sus métodos de pago.</p>') + '</div>';
+    return h + card;
+  };
+  const sel0 = null;
+
+  /* ---------- Autogestión: QR del laboratorio + orden del paciente con comprobante ---------- */
+  S.labQr = { on: true }; S.so = { sel: [], pks: [], open: '', proof: '', msg: '', done: null };
+  const QRL = 'QR del laboratorio';
+  function receiptSample(bs, ref) {
+    const c = document.createElement('canvas'); c.width = 600; c.height = 820; const g = c.getContext('2d');
+    g.fillStyle = '#f4f6ff'; g.fillRect(0, 0, 600, 820); g.fillStyle = '#1b8f5a'; g.fillRect(0, 0, 600, 120); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = '700 34px Poppins, sans-serif'; g.fillText('Pago realizado', 300, 62); g.font = '500 20px Poppins, sans-serif'; g.fillText('Comprobante de ejemplo (demostración)', 300, 96);
+    g.fillStyle = '#14193A'; g.textAlign = 'left'; const rows = [['Banco', 'Banesco · Pago móvil'], ['Monto', 'Bs ' + bs], ['Referencia', ref], ['Fecha', X.longDate()], ['Destino', '0414-5550100'], ['Concepto', 'Exámenes de laboratorio']];
+    rows.forEach(function (r, i) { const y = 190 + i * 96; g.fillStyle = '#5b6490'; g.font = '500 20px Poppins, sans-serif'; g.fillText(r[0], 50, y); g.fillStyle = '#14193A'; g.font = '700 28px Poppins, sans-serif'; g.fillText(r[1], 50, y + 36); });
+    return c.toDataURL('image/jpeg', 0.8);
+  }
+  function priceSel(so) { let t = 0; const cov = []; so.pks.forEach(function (id) { const p = D.PACKAGES.filter(function (x) { return x.id === id; })[0]; if (p) { t += p.price; p.items.forEach(function (e) { cov.push(e); }); } }); so.sel.forEach(function (e) { if (cov.indexOf(e) < 0) t += D.BY_ID[e].price; }); return t; }
+  function exSel(so) { const s = []; so.pks.forEach(function (id) { const p = D.PACKAGES.filter(function (x) { return x.id === id; })[0]; if (p) p.items.forEach(function (e) { if (s.indexOf(e) < 0) s.push(e); }); }); so.sel.forEach(function (e) { if (s.indexOf(e) < 0) s.push(e); }); return s; }
+  // pedido de ejemplo ya hecho por QR (para que el laboratorio lo vea)
+  (function () { const ex = ['glu', 'col'], usd = ex.reduce(function (s, e) { return s + D.BY_ID[e].price; }, 0), rate = D.RATES.bcv.value, bs = L.fmtInt ? L.fmtInt(usd * rate) : String(Math.round(usd * rate)); try { S.orders.unshift({ id: 'LAB-0191', pid: 'p5', exams: ex, pkgs: [], usd: usd, cost: ex.reduce(function (s, e) { return s + D.BY_ID[e].cost; }, 0), cur: 'bcv', rate: rate, method: 'Pago móvil', paid: false, status: 'Por procesar', when: 'Hoy 09:12', by: 'Paciente (' + QRL + ')', doctor: '', via: QRL, payRep: { method: 'Pago móvil', ref: '00482917', when: 'Hoy 09:14', proof: receiptSample(bs, '00482917') } }); } catch (e) { } })();
+
+  /* Laboratorio: QR para imprimir y pegar */
+  const code = function () { return 'LABS-LAB-' + S.labs[0].id.toUpperCase(); };
+  V.lab.qrlab = function () {
+    const lab = S.labs[0]; const n = S.orders.filter(function (o) { return o.via === QRL; }).length; const pend = S.orders.filter(function (o) { return o.via === QRL && !o.paid && o.status !== 'Anulada'; }).length;
+    const poster = '<div class="paper-fit"><div class="sheet" style="align-items:center;text-align:center"><div style="font-size:34px;font-weight:800;line-height:1.1">' + esc(lab.name) + '</div><div style="font-size:22px;color:#3A4470">Adelanta tu orden desde tu teléfono</div>' + (window.QRT ? window.QRT.svg(code(), 420) : '') + '<div style="font-size:26px;font-weight:700">Escanea este QR con la cámara</div>' +
+      '<div style="text-align:left;font-size:20px;line-height:1.7"><div><b>1.</b> Elige tus exámenes</div><div><b>2.</b> Mira cuánto cuesta</div><div><b>3.</b> Paga y sube tu comprobante</div><div><b>4.</b> Dile a la persona de caja tu nombre y tu cédula. Espera que te llamen para tomar tu muestra</div></div><div style="margin-top:auto;font-size:14px;color:#3A4470">' + esc(code()) + ' · Hecho con LABS</div></div></div>';
+    return '<div class="head"><div><h1>QR para tus pacientes</h1><p>Imprímelo y pégalo en tu local. Tus pacientes lo escanean y adelantan su orden mientras esperan.</p></div></div>' +
+      '<div class="card"><h2>Cómo funciona</h2><ul class="clean small"><li>El paciente escanea, elige sus exámenes, ve el precio, paga y sube su comprobante.</li><li>Te llega a <b>Atender pacientes → Cobrar la orden</b>. Búscalo por cédula, mira su comprobante y confirma el pago.</li><li>Después solo falta tomar la muestra. Menos fila y menos espera.</li></ul>' +
+      '<div class="row"><span class="chip ' + (S.labQr.on ? 'ok' : 'gray') + '">' + (S.labQr.on ? 'Recibiendo órdenes por QR' : 'Apagado') + '</span><span class="chip gray">' + n + (n === 1 ? ' orden por QR' : ' órdenes por QR') + '</span>' + (pend ? '<span class="chip warn">' + pend + ' por confirmar pago</span>' : '') + '</div>' +
+      '<div class="btnrow"><button class="btn" type="button" data-a="qrlab-print">Imprimir cartel</button><button class="btn ghost" type="button" data-a="qrlab-dl">Descargar QR</button><button class="btn ghost" type="button" data-a="qrlab-copy">Copiar código</button><button class="btn ' + (S.labQr.on ? 'warn' : 'ghost') + '" type="button" data-a="qrlab-toggle">' + (S.labQr.on ? 'Apagar órdenes por QR' : 'Activar órdenes por QR') + '</button></div></div>' +
+      '<div class="card"><h2>Así se ve el cartel</h2>' + poster + '</div>' +
+      '<div class="card note"><h2>Cuidados</h2><ul class="clean small"><li>El QR es público y solo lleva al laboratorio. No tiene datos de nadie.</li><li>Ningún examen se hace sin pago confirmado por ti.</li><li>Si lo apagas, el que escanee verá que debe pasar por caja.</li></ul></div>';
+  };
+  A['qrlab-print'] = function () { try { window.print(); } catch (e) { toast('Aquí no se puede imprimir. En la versión real se imprime o se guarda en PDF.'); } };
+  A['qrlab-dl'] = function () { try { const a = document.createElement('a'); a.href = window.QRT.dataUrl(code(), 900); a.download = 'QR-' + S.labs[0].name.replace(/\W+/g, '-') + '.png'; document.body.appendChild(a); a.click(); a.remove(); toast('QR descargado.'); } catch (e) { toast('No se pudo descargar el QR.'); } };
+  A['qrlab-copy'] = function () { EXT.pm.copyText(code()).then(function (ok) { toast(ok ? 'Código copiado.' : 'No se pudo copiar.'); }); };
+  A['qrlab-toggle'] = function () { S.labQr.on = !S.labQr.on; logAudit(S.auth.name, S.labQr.on ? 'Activó las órdenes por QR' : 'Apagó las órdenes por QR'); toast(S.labQr.on ? 'Órdenes por QR activadas.' : 'Órdenes por QR apagadas.'); render(); };
+  EXT.nav.lab.splice(Math.max(1, EXT.nav.lab.map(function (n) { return n.id; }).indexOf('atencion') + 1), 0, { id: 'qrlab', label: 'QR para pacientes' });
+  if (EXT.MI) EXT.MI.qrlab = EXT.MI.qr || '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>';
+  [[V.lab, 'config'], [V.lab, 'suscripcion']].forEach(function (x) { const f0 = x[0][x[1]]; if (f0) x[0][x[1]] = function () { const h = f0(); const card = '<div class="card"><h2>QR para tus pacientes</h2><p class="small muted">Imprime un cartel con tu QR para que tus pacientes adelanten su orden y su pago mientras esperan.</p><div class="row"><button class="btn" type="button" data-a="nav" data-v="qrlab">Ver y imprimir mi QR</button></div></div>'; const i = h.indexOf('<p class="byline">'); return i < 0 ? h + card : h.slice(0, i) + card + h.slice(i); }; });
+
+  /* Paciente: ordenar en el laboratorio */
+  EXT.nav.pat.push({ id: 'autoorden', label: 'Ordenar en el laboratorio', hidden: true });
+  function trk(o) { const st = [['Orden enviada', true], ['Pago confirmado', !!o.paid], ['Toma de muestra', !!o.sample || o.status === 'Enviada'], ['Resultados', o.status === 'Enviada']]; return '<div class="pill-row">' + st.map(function (s, i) { return '<span class="chip ' + (s[1] ? 'ok' : 'gray') + '">' + (i + 1) + '. ' + s[0] + (s[1] ? ' ✓' : '') + '</span>'; }).join('') + '</div>'; }
+  function myQrOrders() { return S.orders.filter(function (o) { return o.pid === X.myPid() && o.via === QRL && o.status !== 'Anulada'; }); }
+  function catsOf() { const cs = []; D.CATALOG.forEach(function (c) { const k = c.cat || 'Otros'; if (cs.indexOf(k) < 0) cs.push(k); }); return cs; }
+  V.pat.autoorden = function () {
+    const lab = S.labs[0]; const so = S.so; const p = X.personOf(X.myPid()) || {};
+    if (!S.labQr.on) return '<div class="head"><div><h1>Ordenar en el laboratorio</h1></div></div><div class="card"><p>Este laboratorio no está recibiendo órdenes por QR ahora. Pasa por caja.</p></div>';
+    if (so.done) {
+      const o = S.orders.filter(function (x) { return x.id === so.done; })[0]; if (o) {
+        const pr = o.paid ? '<span class="chip ok">Pago confirmado</span>' : o.payRep ? '<span class="chip warn">Pago por confirmar</span>' : '<span class="chip warn">Pagarás en caja</span>';
+        return '<div class="head"><div><h1>Tu orden ' + o.id + '</h1><p>' + esc(lab.name) + '</p></div></div><div class="card"><div class="row">' + pr + '</div>' + trk(o) + '<h3>En caja, di esto</h3><div class="autodata"><b>“Ya hice mi orden con el QR. Mi nombre es ' + esc(p.name) + ' y mi cédula es ' + esc(p.ci) + '.”</b></div><p class="small muted">La persona del laboratorio te busca por la cédula, ve tu orden y tu comprobante y confirma tu pago. Después te llaman para tomarte la muestra.</p></div>' +
+          '<div class="card"><h2>Lo que pediste</h2>' + o.exams.map(function (e) { return '<div class="vrow"><span>' + esc(D.BY_ID[e].name) + '</span></div>'; }).join('') + '<div class="vrow"><span><b>Total</b></span><b>' + L.fmtUsd(o.usd) + ' · ' + L.fmtBs(o.usd * o.rate) + '</b></div>' + (o.payRep && o.payRep.proof ? '<img src="' + o.payRep.proof + '" alt="Tu comprobante" style="width:100%;max-width:240px;border-radius:12px">' : '') + '</div>' +
+          '<div class="row"><button class="btn ghost" type="button" data-a="so-new">Hacer otra orden</button></div>';
+      }
+    }
+    const usd = priceSel(so); const rBcv = D.RATES.bcv.value, rUsdt = D.RATES.usdt ? D.RATES.usdt.value : rBcv; const cats = catsOf();
+    const pkgs = D.PACKAGES.map(function (k) { const on = so.pks.indexOf(k.id) >= 0; return '<button type="button" class="soex' + (on ? ' on' : '') + '" data-a="so-pk" data-v="' + k.id + '" aria-pressed="' + on + '"><span class="t">' + esc(k.name) + '<small>' + k.items.length + ' exámenes</small></span><b>' + L.fmtUsd(k.price) + '</b><i class="ck">' + (on ? '✓' : '') + '</i></button>'; }).join('');
+    const catH = cats.map(function (cat) {
+      const open = so.open === cat; const list = D.CATALOG.filter(function (c) { return (c.cat || 'Otros') === cat; }); const n = list.filter(function (c) { return so.sel.indexOf(c.id) >= 0; }).length;
+      return '<div class="acc"><button type="button" class="acch" data-a="so-cat" data-v="' + esc(cat) + '" aria-expanded="' + open + '"><span class="t">' + esc(cat) + '<span class="s">' + list.length + ' exámenes</span></span>' + (n ? '<span class="chip ok">' + n + '</span>' : '') + '<i class="chev' + (open ? ' open' : '') + '" aria-hidden="true">›</i></button>' + (open ? '<div class="accb pickgrid">' + list.map(function (c) { const on = so.sel.indexOf(c.id) >= 0; return '<button type="button" class="soex' + (on ? ' on' : '') + '" data-a="so-ex" data-v="' + c.id + '" aria-pressed="' + on + '"><span class="t">' + esc(c.name) + '</span><b>' + L.fmtUsd(c.price) + '</b><i class="ck">' + (on ? '✓' : '') + '</i></button>'; }).join('') + '</div>' : '') + '</div>';
+    }).join('');
+    const names = exSel(so).map(function (e) { return D.BY_ID[e].name; });
+    const pays = S.pm.lab.filter(function (m) { return m.on; }).map(function (m) { return m.name; }).concat(['Pagar en caja']);
+    const meth = F('so-method', pays[0]); const caja = meth === 'Pagar en caja';
+    return '<div class="head"><div><h1>Ordenar en el laboratorio</h1><p>' + esc(lab.name) + ' · adelanta tu orden y tu pago</p></div></div>' +
+      '<div class="card"><h2>1. Tus datos</h2><div class="kv"><small>Nombre</small><b>' + esc(p.name) + '</b></div><div class="kv"><small>Cédula</small><b>' + esc(p.ci) + '</b></div><div class="kv"><small>Teléfono</small><b>' + esc(p.phone || '—') + '</b></div><p class="small muted">El laboratorio recibe estos datos para armar tu orden.</p></div>' +
+      '<div class="card"><h2>2. Elige tus exámenes</h2><div class="acc"><button type="button" class="acch" data-a="so-cat" data-v="__pk" aria-expanded="' + (so.open === '__pk') + '"><span class="t">Paquetes (perfiles)<span class="s">' + D.PACKAGES.length + ' opciones</span></span>' + (so.pks.length ? '<span class="chip ok">' + so.pks.length + '</span>' : '') + '<i class="chev' + (so.open === '__pk' ? ' open' : '') + '" aria-hidden="true">›</i></button>' + (so.open === '__pk' ? '<div class="accb pickgrid">' + pkgs + '</div>' : '') + '</div><h3>Exámenes sueltos</h3>' + catH + '</div>' +
+      '<div class="card"><h2>3. Cuánto cuesta</h2>' + (names.length ? '<p class="small">' + esc(names.join(', ')) + '</p>' : '<p class="muted small">Todavía no elegiste nada.</p>') + '<div class="vrow"><span>Dólares</span><b>' + L.fmtUsd(usd) + '</b></div><div class="vrow"><span>Bolívares (BCV)</span><b>' + L.fmtBs(usd * rBcv) + '</b></div><div class="vrow"><span>Bolívares (USDT)</span><b>' + L.fmtBs(usd * rUsdt) + '</b></div></div>' +
+      '<div class="card"><h2>4. Paga y sube tu comprobante</h2><p class="small muted">Paga a uno de estos datos. Después sube la captura o la foto del comprobante.</p>' + EXT.pm.methodsView('lab', false) + fld('Cómo pagaste', 'so-method', { type: 'select', options: pays }) +
+      (caja ? '<p class="small muted">Pagarás en caja antes de que te tomen la muestra.</p>' : fld('Número de referencia', 'so-ref', { ph: 'Ej.: 00482917', mode: 'numeric' }) + '<div class="drop"><p>Foto o captura del comprobante</p><div class="row" style="justify-content:center"><label class="btn" style="display:inline-flex;align-items:center;cursor:pointer">Subir comprobante<input type="file" accept="image/jpeg,image/png" data-c="rcpt" class="sr"></label><button class="btn ghost" type="button" data-a="so-sample">Usar uno de ejemplo</button></div></div>' + (so.msg ? '<p class="small" role="status"><b>' + esc(so.msg) + '</b></p>' : '') + (so.proof ? '<img src="' + so.proof + '" alt="Tu comprobante" style="width:100%;max-width:240px;border-radius:12px">' : '')) +
+      errBox('so') + '<div class="row"><button class="btn" type="button" data-a="so-send"' + (names.length ? '' : ' disabled') + '>Enviar mi orden</button></div><p class="small muted">Después de enviarla, ve a caja y di tu nombre y tu cédula. El laboratorio verá tu orden y tu comprobante.</p></div>';
+  };
+  A['so-cat'] = function (v) { S.so.open = S.so.open === v ? '' : v; render(); };
+  A['so-ex'] = function (v) { const i = S.so.sel.indexOf(v); if (i >= 0) S.so.sel.splice(i, 1); else S.so.sel.push(v); render(); };
+  A['so-pk'] = function (v) { const i = S.so.pks.indexOf(v); if (i >= 0) S.so.pks.splice(i, 1); else S.so.pks.push(v); render(); };
+  A['so-new'] = function () { S.so = { sel: [], pks: [], open: '', proof: '', msg: '', done: null }; ['so-ref'].forEach(function (k) { delete S.f[k]; }); S.err = {}; render(); window.scrollTo(0, 0); };
+  A['so-sample'] = function () { const usd = priceSel(S.so); S.so.proof = receiptSample(L.fmtInt ? L.fmtInt(usd * D.RATES.bcv.value) : String(Math.round(usd * D.RATES.bcv.value)), F('so-ref', '00482917') || '00482917'); S.so.msg = 'Comprobante de ejemplo cargado.'; S.err = {}; render(); };
+  document.addEventListener('change', function (ev) { const t = ev.target; if (!t.getAttribute || t.getAttribute('data-c') !== 'rcpt') return; const f = t.files && t.files[0]; if (!f) return; S.so.msg = 'Procesando la foto…'; render(); L.loadImageFromFile(f, 1000).then(function (cv) { S.so.proof = cv.toDataURL('image/jpeg', 0.75); S.so.msg = 'Comprobante cargado. Revisa que se lea bien.'; S.err = {}; render(); }).catch(function () { S.so.msg = 'No se pudo abrir esa imagen. Usa una foto JPG o PNG.'; render(); }); });
+  A['so-send'] = function () {
+    const so = S.so; const ex = exSel(so); if (!ex.length) return X.setErr('so', 'Elige al menos un examen.');
+    const pays = S.pm.lab.filter(function (m) { return m.on; }).map(function (m) { return m.name; }).concat(['Pagar en caja']); const meth = F('so-method', pays[0]); const caja = meth === 'Pagar en caja'; const ref = F('so-ref').trim();
+    if (!caja) { if (ref.length < 4) return X.setErr('so', 'Escribe el número de referencia de tu pago.'); if (!so.proof) return X.setErr('so', 'Sube la foto o captura de tu comprobante.'); }
+    const usd = priceSel(so); const id = 'LAB-0' + (S.oseq++); const p = X.personOf(X.myPid());
+    const o = { id: id, pid: X.myPid(), exams: ex, pkgs: so.pks.map(function (k) { return D.PACKAGES.filter(function (x) { return x.id === k; })[0].name; }), usd: usd, cost: ex.reduce(function (s, e) { return s + D.BY_ID[e].cost; }, 0), cur: 'bcv', rate: D.RATES.bcv.value, method: meth, paid: false, status: 'Por procesar', when: X.when(), by: 'Paciente (' + QRL + ')', doctor: '', via: QRL, payRep: caja ? null : { method: meth, ref: ref, when: X.when(), proof: so.proof } };
+    S.orders.unshift(o); so.done = id; ['so-ref', 'so-method'].forEach(function (k) { delete S.f[k]; }); S.err = {}; so.proof = ''; so.msg = '';
+    X.notify('lab', p.name + ' (' + p.ci + ') hizo su orden ' + id + ' con el QR' + (caja ? ' y pagará en caja.' : ' y subió su comprobante (Ref. ' + ref + ').'), { type: 'go', ref: 'atencion' });
+    logAudit(S.auth.name, 'Hizo la orden ' + id + ' con el QR del laboratorio'); toast('Orden enviada. Ahora ve a caja y di tu nombre y tu cédula.'); render(); window.scrollTo(0, 0);
+  };
+  A['sc-lab'] = function () { EXT.openScanner('plab'); };
+  A['so-open'] = function (v) { S.so.done = v; S.hub = false; S.pat = 'autoorden'; render(); window.scrollTo(0, 0); };
+  const pi1 = V.pat.inicio; V.pat.inicio = function () {
+    const h = pi1(); const mine = myQrOrders().filter(function (o) { return o.status !== 'Enviada'; }); let card;
+    if (mine.length) { const o = mine[0]; card = '<div class="card"><div class="row between"><h2>Tu orden en el laboratorio</h2><button class="btn ghost sm" type="button" data-a="so-open" data-v="' + o.id + '">Ver</button></div><p class="small muted">' + o.id + ' · ' + esc(S.labs[0].name) + '</p>' + trk(o) + '</div>'; }
+    else card = '<div class="card"><h2>¿Estás en un laboratorio?</h2><p class="small muted">Escanea el QR que está pegado en el local. Eliges tus exámenes, ves el precio y pagas desde aquí, sin hacer fila.</p><div class="row"><button class="btn" type="button" data-a="sc-lab">Escanear QR del laboratorio</button></div></div>';
+    return h.replace(/(<div class="card dark dashhero">[\s\S]*?<\/div><\/div>)/, function (m) { return m + card; });
+  };
+  const pq1 = V.pat.qr; V.pat.qr = function () { return pq1() + '<div class="card"><h2>Escanear el QR de un laboratorio</h2><p class="small muted">Si estás en un laboratorio, escanea su QR para adelantar tu orden y tu pago.</p><div class="row"><button class="btn ghost" type="button" data-a="sc-lab">Escanear QR del laboratorio</button></div></div>'; };
+  const smp0 = A['o-sample-ok']; A['o-sample-ok'] = function (v) { const o = S.orders.filter(function (x) { return x.id === v; })[0]; const ok = F('sm-ok'); smp0(v); if (ok && o && o.sample && o.via === QRL) notify('pat', 'Ya tomaron tu muestra de la orden ' + o.id + '. Te avisamos cuando estén los resultados.', { type: 'go', ref: 'autoorden' }, o.pid); };
   render();
 })();

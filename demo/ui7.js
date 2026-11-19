@@ -96,13 +96,19 @@
     if (!ex) {
       const rs = D.PATIENT_RESULTS.filter(function (r) { return r.pid === pid; });
       S.docPatients.push({ pid: pid, name: 'Paciente ' + p.name.split(' ').map(function (w) { return w[0] + '.'; }).join(' '), ci: X.maskCi(p.ci), exam: rs.length ? rs[rs.length - 1].title : 'Sin resultados', date: rs.length ? rs[rs.length - 1].date.split(' de ')[0] + ' ' + rs[rs.length - 1].date.split(' de ')[1].slice(0, 3) : '—', alerts: 0, until: 'en 3 meses', scope: 'Todos los resultados', flag: '' });
-      S.access.push({ id: X.uid('ac'), pid: pid, doc: 'Dra. Marisol Pérez', until: 'en 3 meses', scope: 'Todos los resultados', on: true });
-      X.notify('pat', 'La Dra. Marisol Pérez ahora puede ver tus resultados por 3 meses. Puedes quitarle el acceso cuando quieras.', { type: 'go', ref: 'qr' }, pid);
+      S.access.push({ id: X.uid('ac'), pid: pid, doc: S.docProfile.name, mpps: S.docProfile.mpps, until: 'en 3 meses', scope: 'Todos los resultados', on: true });
+      X.notify('pat', window.DOCART() + ' ahora puede ver tus resultados por 3 meses. Puedes quitarle el acceso cuando quieras.', { type: 'go', ref: 'qr' }, pid);
     }
     return S.docPatients.map(function (x) { return x.pid; }).indexOf(pid);
   }
   function handle(mode, raw) {
     const text = String(raw || '').trim(); if (!text) return { ok: false, msg: 'No pude leer ese QR.' };
+    if (mode === 'plab') {
+      if (!/^LABS-LAB-/i.test(text)) return { ok: false, msg: 'Ese QR no es de un laboratorio de LABS.' };
+      const lab = S.labs.filter(function (l) { return 'LABS-LAB-' + l.id.toUpperCase() === text.toUpperCase(); })[0]; if (!lab || lab.id !== S.labs[0].id) return { ok: false, msg: 'Ese laboratorio todavía no recibe órdenes por QR.' };
+      if (!S.labQr.on) return { ok: false, msg: 'Este laboratorio no está recibiendo órdenes por QR ahora. Pregunta en caja.' };
+      closeScanner(); S.so = { sel: [], pks: [], open: '', proof: '', msg: '', done: null }; S.hub = false; S.pat = 'autoorden'; logAudit(S.auth.name, 'Escaneó el QR de ' + lab.name); toast('Conectado con ' + lab.name + '.'); render(); window.scrollTo(0, 0); return { ok: true };
+    }
     if (mode === 'pdoc') {
       if (!/^LABS-DOC-/i.test(text)) return { ok: false, msg: 'Ese QR no es de un médico de LABS.' };
       grantDoctor(X.myPid()); logAudit(S.auth.name, 'Escaneó el QR de su médico'); closeScanner(); S.hub = false; S.pat = 'qr'; toast('Listo. Tu médico ya puede ver tus resultados.'); render(); return { ok: true };
@@ -114,12 +120,13 @@
     closeScanner(); S.hub = false; S.lab = 'nueva'; render(); window.scrollTo(0, 0); toast('Paciente escaneado. Sus datos se completaron solos.'); return { ok: true };
   }
   function demoList(mode) {
+    if (mode === 'plab') return '<button type="button" class="btn ghost sm" data-s="sim" data-v="LABS-LAB-L1">Escanear el QR de ' + esc(S.labs[0].name) + '</button>';
     if (mode === 'pdoc') return '<button type="button" class="btn ghost sm" data-s="sim" data-v="LABS-DOC-12345">Escanear el QR de la Dra. Marisol Pérez</button>';
     return S.patients.filter(function (p) { return p.id !== 'p7' && !p.deleted && !p.labOnly && p.name !== 'Cuenta eliminada'; }).map(function (p) { return '<button type="button" class="btn ghost sm" data-s="sim" data-v="' + p.id + '">' + esc(p.name) + '</button>'; }).join('');
   }
   function drawScan() {
     const ov = document.getElementById('scanner'); if (!ov || !scn) return; const mode = scn.mode;
-    const title = mode === 'pdoc' ? 'Escanear el QR de mi médico' : 'Escanear al paciente'; const desc = mode === 'lab' ? 'Al escanear, la planilla se llena sola con los datos que el paciente autoriza compartir: nombre, apellido, cédula, teléfono, correo y dirección.' : mode === 'doc' ? 'Al escanear, el paciente te da acceso a sus exámenes por 3 meses. Él puede quitarlo cuando quiera.' : 'Escanea el QR de tu médico para darle acceso a tus resultados.';
+    const title = mode === 'plab' ? 'Escanear el QR del laboratorio' : mode === 'pdoc' ? 'Escanear el QR de mi médico' : 'Escanear al paciente'; const desc = mode === 'plab' ? 'Escanea el QR pegado en el laboratorio. Podrás elegir tus exámenes, ver el precio, pagar y subir tu comprobante, sin hacer fila.' : mode === 'lab' ? 'Al escanear, la planilla se llena sola con los datos que el paciente autoriza compartir: nombre, apellido, cédula, teléfono, correo y dirección.' : mode === 'doc' ? 'Al escanear, el paciente te da acceso a sus exámenes por 3 meses. Él puede quitarlo cuando quiera.' : 'Escanea el QR de tu médico para darle acceso a tus resultados.';
     const tabs = mode === 'doc' ? '<div class="seg" role="group" aria-label="Opciones del QR"><button type="button" data-s="tab" data-v="scan" aria-pressed="' + (scn.tab === 'scan') + '">Escanear paciente</button><button type="button" data-s="tab" data-v="mine" aria-pressed="' + (scn.tab === 'mine') + '">Mi QR</button></div>' : '';
     let body;
     if (mode === 'doc' && scn.tab === 'mine') body = '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">' + QRT.svg('LABS-DOC-12345', 240) + '<b>Dra. Marisol Pérez</b><span class="small muted">MPPS 12345 · LABS-DOC-12345</span><p class="small muted">Muéstrale este QR al paciente que quiera ser evaluado por ti. Él lo escanea desde su teléfono y te da acceso.</p></div>';
@@ -143,7 +150,7 @@
     ov.addEventListener('click', function (ev) {
       const t = ev.target.closest('[data-s]'); if (!t) { if (ev.target === ov) closeScanner(); return; } const a = t.getAttribute('data-s'), v = t.getAttribute('data-v');
       if (a === 'close') closeScanner(); else if (a === 'cam') startCam(); else if (a === 'tab') { scn.tab = v; stopCam(); drawScan(); }
-      else if (a === 'sim') { const code = scn.mode === 'pdoc' ? v : EXT.qrCodeOf(v); const r = handle(scn.mode, code); if (!r.ok) status(r.msg, true); }
+      else if (a === 'sim') { const code = scn.mode === 'pdoc' || scn.mode === 'plab' ? v : EXT.qrCodeOf(v); const r = handle(scn.mode, code); if (!r.ok) status(r.msg, true); }
     });
     ov.addEventListener('change', function (ev) { const t = ev.target; if (!t.matches || !t.matches('input[data-s-file]') || !t.files[0]) return; QRT.fileToQr(t.files[0]).then(function (r) { if (!r || !r.text) return status('No pude leer un QR en esa foto. Prueba con otra más clara.', true); const h = handle(scn && scn.mode, r.text); if (!h.ok) status(h.msg, true); }); });
     drawScan();

@@ -22,7 +22,7 @@
 
   V.resumen = function () {
     const chips = [['pagos', pendPay(), 'pagos por confirmar'], ['soporte', openTk(), 'tickets abiertos'], ['red', alertsWait(), 'alertas por revisar'], ['claves', resetsWait(), 'claves por aprobar']];
-    return '<div class="card"><h2>Hay que atender hoy</h2><div class="row">' + chips.map(function (c) { return '<button class="btn ghost" type="button" data-a="nav" data-v="' + c[0] + '">' + c[1] + ' ' + c[2] + '</button>'; }).join('') + '</div></div>' + U2.admResumen();
+    return '<div class="card"><h2>Hay que atender hoy</h2><div class="secs">' + chips.map(function (c) { return '<button type="button" class="secbtn" data-a="nav" data-v="' + c[0] + '"><span style="flex:1">' + c[2].charAt(0).toUpperCase() + c[2].slice(1) + '</span><span class="chip ' + (c[1] ? 'warn' : 'gray') + '" style="margin-right:8px">' + c[1] + '</span><i aria-hidden="true">›</i></button>'; }).join('') + '</div></div>' + U2.admResumen();
   };
   V.labs = U2.admLabs; V.claves = U2.admClaves; V.red = function () { return U2.admRed() + X.tropicalCard('adm'); }; V.registro = U2.admRegistro;
   V.avisos = X.avisosView;

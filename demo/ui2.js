@@ -5,7 +5,7 @@
 
   S.seen = [
     { when: 'Hoy 09:20', who: 'Laboratorio Ejemplo', what: 'Subió el resultado LAB-0142' },
-    { when: '15 nov 18:02', who: 'Dra. [MÉDICO]', what: 'Abrió el resultado LAB-0142' },
+    { when: '15 nov 18:02', who: 'Dra. Marisol Pérez', what: 'Abrió el resultado LAB-0142' },
     { when: '3 ago 10:11', who: 'Laboratorio Ejemplo', what: 'Subió el resultado LAB-0117' }
   ];
   S.requests = [{ id: 'q1', name: 'Paciente S. V.', note: 'Te envió acceso a sus resultados por 3 meses.' }, { id: 'q2', name: 'Paciente D. C.', note: 'Te envió acceso a sus resultados de hematología.' }];
@@ -50,7 +50,7 @@
     const code = 'LABS-' + ('0000' + (4821 + S.qrN * 37)).slice(-4) + '-' + ['KQ7P', 'M2XD', 'R9TC', 'H4VN', 'B8WZ'][S.qrN % 5];
     return '<div class="head"><div><h1>Mi código QR</h1><p>Muéstralo en el laboratorio. Es solo tuyo.</p></div></div>' +
       '<div class="grid two"><div class="card" style="align-items:center;text-align:center">' + L.qrSvg(code, 200) + '<b>' + code + '</b><div class="chip warn" id="qrcount" role="timer">Vence en 5:00</div><p class="small muted">Se cambia solo cada 5 minutos y sirve una sola vez. Una captura de pantalla vieja no funciona.</p><button class="btn ghost sm" type="button" data-a="qrnew">Generar otro ahora</button></div>' +
-      '<div style="display:flex;flex-direction:column;gap:16px"><div class="card"><h2>Quién puede ver lo tuyo</h2><div class="row between"><div><b>Dra. [MÉDICO]</b><div class="small muted">Hasta el 14 feb 2027 · todos los resultados</div></div><button class="btn ' + (S.perm.l1 ? 'warn' : 'ghost') + ' sm" type="button" data-a="permdoc">' + (S.perm.l1 ? 'Quitar acceso' : 'Dar acceso') + '</button></div><div class="small ' + (S.perm.l1 ? 'up' : 'muted') + '" role="status">' + (S.perm.l1 ? 'Tu médico puede ver tus resultados.' : 'Acceso quitado. Tu médico ya no ve nada nuevo.') + '</div></div>' +
+      '<div style="display:flex;flex-direction:column;gap:16px"><div class="card"><h2>Quién puede ver lo tuyo</h2><div class="row between"><div><b>Dra. Marisol Pérez</b><div class="small muted">Hasta el 14 feb 2027 · todos los resultados</div></div><button class="btn ' + (S.perm.l1 ? 'warn' : 'ghost') + ' sm" type="button" data-a="permdoc">' + (S.perm.l1 ? 'Quitar acceso' : 'Dar acceso') + '</button></div><div class="small ' + (S.perm.l1 ? 'up' : 'muted') + '" role="status">' + (S.perm.l1 ? 'Tu médico puede ver tus resultados.' : 'Acceso quitado. Tu médico ya no ve nada nuevo.') + '</div></div>' +
       '<div class="card"><h2>Mis dependientes</h2><div class="row between"><div><b>[HIJO/A] · 8 años</b><div class="small muted">Tú ves sus resultados con tu cuenta</div></div><button class="btn ghost sm" type="button" data-a="dep">Ver como él/ella</button></div></div></div></div>';
   }
   function patVistas() {
@@ -62,7 +62,7 @@
   }
 
   /* ---------- Médico ---------- */
-  function docNav() { return side([{ id: 'lista', label: 'Mis pacientes' }, { id: 'sol', label: 'Solicitudes', badge: sectionBadge(S.requests.length) }], S.doc, 'Dra. [MÉDICO]', 'Médico · MPPS [______]'); }
+  function docNav() { return side([{ id: 'lista', label: 'Mis pacientes' }, { id: 'sol', label: 'Solicitudes', badge: sectionBadge(S.requests.length) }], S.doc, 'Dra. Marisol Pérez', 'Médico · MPPS [______]'); }
   function docLista() {
     const P = D.DOCTOR_PATIENTS; const p = P[S.docSel]; const first = S.docSel === 0; const g = D.BY_ID.glu;
     return '<div class="head"><div><h1>Mis pacientes</h1><p>Solo ves lo que cada paciente te permitió ver.</p></div><button class="btn ghost sm" type="button" data-a="mode2" data-v="pat">Cambiar a modo paciente</button></div>' +
@@ -107,7 +107,7 @@
     return '<div class="head"><div><h1>Claves</h1><p>Nunca ves ni cambias una clave. Envías un enlace al contacto ya registrado.</p></div></div>' +
       '<div class="grid two"><div class="card"><h2>Enviar enlace de nueva clave</h2><label class="f">Tipo de usuario<select data-c="resetType">' + ['Paciente', 'Médico', 'Laboratorio'].map(function (t) { return '<option' + (S.resetType === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label>' +
       (isLab ? '<label class="f">Laboratorio<select data-c="resetWho">' + S.labs.map(function (l, i) { return '<option value="' + i + '"' + (S.resetWho === i ? ' selected' : '') + '>' + esc(l.name) + '</option>'; }).join('') + '</select></label>' : '<label class="f">Cédula o correo registrado<input type="text" value="V-••.•••.•45" disabled></label>') +
-      '<button class="btn" type="button" data-a="resetgo">' + (isLab ? 'Pedir enlace (necesita segundo aprobador)' : 'Enviar enlace al contacto registrado') + '</button>' +
+      '<button class="btn" type="button" data-a="resetgo">' + (isLab ? 'Pedir enlace' : 'Enviar enlace al contacto registrado') + '</button>' +
       '<p class="small muted">' + (isLab ? 'Para un laboratorio, otra persona de LABS debe aprobarlo y hay una espera de 24 horas. Así nadie puede robar una cuenta con una sola llamada.' : 'El enlace llega al teléfono o correo que la persona ya tenía registrado, y vence en 30 minutos.') + '</p></div>' +
       '<div class="card"><h2>Pedidos recientes</h2>' + (S.resets.length ? S.resets.map(function (r, i) { return '<div class="row between" style="padding:8px 0;border-top:1px solid var(--line)"><div><b>' + esc(r.who) + '</b><div class="small muted">' + esc(r.type) + ' · ' + esc(r.when) + '</div></div>' + (r.state === 'espera' ? '<div class="row"><span class="chip warn">Espera 2.º aprobador</span><button class="btn ghost sm" type="button" data-a="resetok" data-i="' + i + '">Aprobar (2.º aprobador)</button></div>' : '<span class="chip ok">' + esc(r.msg) + '</span>') + '</div>'; }).join('') : '<p class="muted">Todavía no has enviado ninguno.</p>') + '</div></div>';
   }
@@ -206,7 +206,7 @@
       case 'close': S.modal = null; render(); return;
       case 'print': try { window.print(); } catch (e) { toast('Aquí no se puede imprimir. En la versión real se descarga el PDF.'); } return;
       case 'qrnew': S.qrN++; S.qrEnds = Date.now() + 300000; render(); return;
-      case 'permdoc': S.perm.l1 = !S.perm.l1; S.seen.unshift({ when: 'Hoy ' + U.nowTime(), who: 'Tú', what: S.perm.l1 ? 'Diste acceso a Dra. [MÉDICO]' : 'Quitaste el acceso a Dra. [MÉDICO]' }); render(); return;
+      case 'permdoc': S.perm.l1 = !S.perm.l1; S.seen.unshift({ when: 'Hoy ' + U.nowTime(), who: 'Tú', what: S.perm.l1 ? 'Diste acceso a Dra. Marisol Pérez' : 'Quitaste el acceso a Dra. Marisol Pérez' }); render(); return;
       case 'dep': toast('En la versión real ves los resultados de tus dependientes con tu cuenta.'); return;
       case 'docsel': S.docSel = i; render(); return;
       case 'reqok': S.requests = S.requests.filter(function (q) { return q.id !== v; }); toast('Aceptada. Verás sus resultados hasta que venza el permiso.'); return;

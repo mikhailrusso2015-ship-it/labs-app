@@ -25,15 +25,21 @@
   V.atencion = function () {
     const own = isOwner(); const O = S.orders.filter(function (o) { return o.status !== 'Anulada'; }); const live = function (o) { return o.status === 'Por procesar' || o.status === 'En proceso'; };
     const wait = O.filter(function (o) { return o.status === 'Esperando paciente'; });
-    const unpaid = O.filter(function (o) { return !o.paid; });
     const toSample = O.filter(function (o) { return o.paid && live(o) && needsSample(o) && !o.sample; });
     const toLoad = O.filter(function (o) { return o.paid && live(o) && (!needsSample(o) || o.sample); });
     const sent = O.filter(function (o) { return o.status === 'Enviada'; }).slice(0, 5);
+    const unpaid = O.filter(function (o) { return !o.paid; }); const cq = F('cb-q').trim().toLowerCase(), cqd = cq.replace(/\D/g, '');
+    const cobrar = unpaid.filter(function (o) { if (!cq) return true; const pp = X.personOf(o.pid) || {}; return (o.id + ' ' + (pp.name || '')).toLowerCase().indexOf(cq) >= 0 || (cqd.length >= 3 && String(pp.ci || '').replace(/\D/g, '').indexOf(cqd) >= 0); }).sort(function (a, b) { return (b.payRep ? 1 : 0) - (a.payRep ? 1 : 0); });
+    function payRow(o) {
+      const pp = X.personOf(o.pid) || {}; const head = '<div><b>' + esc(pname(o.pid)) + '</b><div class="small muted">Cédula ' + esc(pp.ci || '—') + ' · ' + o.id + ' · ' + esc(examsShort(o.exams)) + '</div></div>'; const box = 'padding:10px 0;border-top:1px solid var(--line)';
+      if (!o.payRep) return '<div style="' + box + '"><div class="row between">' + head + '<div class="row"><span class="small muted">' + L.fmtUsd(o.usd) + '</span><button class="btn sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar</button></div></div></div>';
+      const r = o.payRep; return '<div style="' + box + '"><div class="row between">' + head + '<span class="chip warn">Pago reportado</span></div><div class="small muted">' + esc(r.method) + (r.ref ? ' · Ref. ' + esc(r.ref) : '') + ' · debe ser ' + L.fmtUsd(o.usd) + ' (' + L.fmtBs(o.usd * o.rate) + ')</div>' + (r.proof ? '<button type="button" class="rcpt" data-a="rcpt-view" data-v="' + o.id + '"><img src="' + r.proof + '" alt="Comprobante de pago"><span>Ver comprobante</span></button>' : '') + '<div class="row"><button class="btn sm" type="button" data-a="o-payok2" data-v="' + o.id + '">Confirmar pago</button><button class="btn ghost sm" type="button" data-a="o-payno" data-v="' + o.id + '">No lo veo</button></div></div>';
+    }
     function row(o, btns) { return '<div style="padding:8px 0;border-top:1px solid var(--line)"><div class="row between"><div><b>' + esc(pname(o.pid)) + '</b><div class="small muted">' + o.id + ' · ' + esc(examsShort(o.exams)) + '</div></div><div class="row">' + btns + '</div></div></div>'; }
     function list(arr, fn, empty) { return arr.length ? arr.map(fn).join('') : '<p class="muted small">' + empty + '</p>'; }
     return '<div class="head"><div><h1>Atender pacientes</h1><p>El camino de cada paciente, de arriba hacia abajo. Primero se cobra y después se toma la muestra.</p></div></div>' +
       '<div class="card"><h2>1. Recibir al paciente</h2><p class="small muted">Busca al paciente o regístralo con su nombre, apellido y cédula. Luego crea su orden.</p><div class="row"><button class="btn sm" type="button" data-a="pc-add">Registrar paciente nuevo</button><button class="btn ghost sm" type="button" data-a="nav" data-v="pacientes">Ver mis pacientes</button><button class="btn ghost sm" type="button" data-a="nav" data-v="nueva">Nueva orden</button></div></div>' +
-      '<div class="card"><h2>2. Cobrar la orden (' + unpaid.length + ')</h2><p class="small muted">El paciente paga antes de que le tomen la muestra.</p>' + list(unpaid, function (o) { return row(o, '<span class="small muted">' + L.fmtUsd(o.usd) + '</span><button class="btn sm" type="button" data-a="o-pay" data-v="' + o.id + '">Cobrar</button>'); }, 'Todo está cobrado.') + '</div>' +
+      '<div class="card"><h2>2. Cobrar la orden (' + unpaid.length + ')</h2><p class="small muted">El paciente paga antes de que le tomen la muestra. Si hizo su orden con el QR, aquí ves su comprobante.</p>' + fld('Buscar por cédula, nombre u orden', 'cb-q', { ph: 'Ej.: 14880118' }) + list(cobrar, function (o) { return payRow(o); }, 'No hay cobros pendientes' + (cq ? ' con esa búsqueda.' : '. Todo está cobrado.')) + '</div>' +
       '<div class="card"><h2>3. Tomar la muestra (' + toSample.length + ')</h2>' + list(toSample, function (o) { return row(o, '<button class="btn sm" type="button" data-a="o-sample" data-v="' + o.id + '">Tomar muestra</button>'); }, 'No hay muestras por tomar.') + '</div>' +
       '<div class="card"><h2>4. Cargar resultados (' + toLoad.length + ')</h2>' + list(toLoad, function (o) { return row(o, own ? '<button class="btn sm" type="button" data-a="o-open" data-v="' + o.id + '">Cargar resultados</button>' : '<span class="chip gray">Lo carga el bioanalista</span>'); }, 'No hay resultados por cargar.') + (own ? '' : '<p class="small muted">Solo el bioanalista revisa, firma y envía.</p>') + '</div>' +
       '<div class="card"><h2>5. Enviados</h2>' + list(sent, function (o) { const lo = (X.personOf(o.pid) || {}).labOnly; return row(o, (lo ? '<span class="chip warn">Entrega impresa</span>' : '<span class="chip ok">En su teléfono</span>') + '<button class="btn ghost sm" type="button" data-a="o-view" data-v="' + o.id + '">Ver / imprimir</button>'); }, 'Todavía no hay resultados enviados.') + '</div>' +
@@ -41,6 +47,16 @@
   };
   EXT.nav.lab.splice(1, 0, { id: 'atencion', label: 'Atender pacientes' });
   EXT.nav.lab.forEach(function (i) { if (i.id === 'pacientes') i.label = 'Mis pacientes'; });
+
+
+  /* ---------- Comprobantes de pago de la autogestión ---------- */
+  function rcptDlg(id) {
+    const o = findOrder(id); const r = o.payRep || {}; const pp = X.personOf(o.pid) || {};
+    dlg('Comprobante · ' + o.id, '<div class="kv"><small>Paciente</small><b>' + esc(pname(o.pid)) + '</b></div><div class="kv"><small>Cédula</small><b>' + esc(pp.ci || '—') + '</b></div><div class="kv"><small>Teléfono</small><b>' + esc(pp.phone || '—') + '</b></div><div class="kv"><small>Exámenes</small><b>' + esc(examsShort(o.exams)) + '</b></div><div class="kv"><small>Debe pagar</small><b>' + L.fmtUsd(o.usd) + ' · ' + L.fmtBs(o.usd * o.rate) + '</b></div><div class="kv"><small>Reportó</small><b>' + esc(r.method || '—') + (r.ref ? ' · Ref. ' + esc(r.ref) : '') + ' · ' + esc(r.when || '') + '</b></div>' + (r.proof ? '<img src="' + r.proof + '" alt="Comprobante de pago" style="width:100%;border-radius:12px;margin-top:8px">' : '<p class="muted small">No subió comprobante.</p>') + '<p class="small muted">Revisa que el monto, la referencia y la fecha coincidan con tu banco antes de confirmar.</p>', { label: 'Confirmar pago', a: 'o-payok2', v: id, closeLabel: 'Cerrar' });
+  }
+  A['rcpt-view'] = function (v) { rcptDlg(v); };
+  A['o-payok2'] = function (v) { const o = findOrder(v); o.paid = true; o.method = (o.payRep && o.payRep.method) || o.method; o.payRep = Object.assign({}, o.payRep, { ok: true }); S.modal = null; logAudit(S.auth.name, 'Confirmó el pago de la orden ' + o.id + ' con su comprobante'); X.notify('pat', 'Tu pago de la orden ' + o.id + ' fue confirmado. Espera a que te llamen para tomar la muestra.', { type: 'go', ref: 'autoorden' }, o.pid); toast('Pago confirmado. Pasa a toma de muestra.'); render(); };
+  A['o-payno'] = function (v) { const o = findOrder(v); o.payRep = null; S.modal = null; logAudit(S.auth.name, 'No encontró el pago reportado de la orden ' + o.id); X.notify('pat', 'No encontramos tu pago de la orden ' + o.id + '. Revisa la referencia o paga en caja.', { type: 'go', ref: 'autoorden' }, o.pid); toast('Se le avisó al paciente que no se ve el pago.'); render(); };
 
   /* ---------- Toma de muestra ---------- */
   function sampleDlg(v, gate) {

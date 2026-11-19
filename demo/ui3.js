@@ -68,7 +68,10 @@
     mkResult('d1', 'LAB-0089', 'Hematología (niña)', '4 de octubre de 2026', [{ id: 'hem', v: 12.8 }, { id: 'ure', v: 24 }])
   );
   S.seen.forEach(function (x) { x.pid = 'p1'; });
-  S.access = [{ id: 'ac1', pid: 'p1', doc: 'Dra. Marisol Pérez', until: '14 feb 2027', scope: 'Todos los resultados', on: true }];
+  S.docProfile = { title: 'Dra.', first: 'Marisol', last: 'Pérez', name: 'Dra. Marisol Pérez', mpps: '12345', esp: 'Medicina interna', phone: '0414-5550730', verified: true };
+  window.DOCP = function () { const d = S.docProfile; return d.name + ' (MPPS ' + d.mpps + ')'; };
+  window.DOCART = function () { return (S.docProfile.title === 'Dra.' ? 'La ' : 'El ') + window.DOCP(); };
+  S.access = [{ id: 'ac1', pid: 'p1', doc: 'Dra. Marisol Pérez', mpps: '12345', until: '14 feb 2027', scope: 'Todos los resultados', on: true }];
   S.docPatients = D.DOCTOR_PATIENTS.map(function (x) { return Object.assign({}, x); });
   S.docReqOut = [];
   S.requests = [{ id: 'q1', pid: 'p3', name: 'Paciente M. S.', note: 'Te envió acceso a sus resultados por 3 meses.' }, { id: 'q2', pid: 'p6', name: 'Paciente D. C.', note: 'Te envió acceso a sus resultados de hematología.' }];
@@ -212,7 +215,7 @@
     const acc = S.access.filter(function (a) { return a.pid === myPid(); });
     return viewAsBanner() + '<div class="head"><div><h1>Mi código QR</h1><p>Muéstralo en el laboratorio. Es solo tuyo.</p></div></div>' +
       '<div class="grid two"><div class="card" style="align-items:center;text-align:center">' + L.qrSvg(code, 200) + '<b>' + code + '</b><div class="chip warn" id="qrcount" role="timer">Vence en 5:00</div><p class="small muted">Se cambia solo cada 5 minutos y sirve una sola vez. Una captura de pantalla vieja no funciona.</p><button class="btn ghost sm" type="button" data-a="p-qrnew">Generar otro ahora</button></div>' +
-      '<div class="card"><h2>Quién puede ver lo tuyo</h2>' + (acc.length ? acc.map(function (a) { return '<div class="row between" style="padding:8px 0;border-top:1px solid var(--line)"><div><b>' + esc(a.doc) + '</b><div class="small muted">Hasta el ' + esc(a.until) + ' · ' + esc(a.scope) + '</div><div class="small ' + (a.on ? 'up' : 'muted') + '" role="status">' + (a.on ? 'Puede ver tus resultados.' : 'Acceso quitado.') + '</div></div><button class="btn ' + (a.on ? 'warn' : 'ghost') + ' sm" type="button" data-a="p-acc" data-v="' + a.id + '">' + (a.on ? 'Quitar acceso' : 'Dar acceso') + '</button></div>'; }).join('') : '<p class="muted">Ningún médico tiene acceso. Cuando uno te lo pida, te llega un aviso para aceptar o rechazar.</p>') + '</div></div>';
+      '<div class="card"><h2>Quién puede ver lo tuyo</h2>' + (acc.length ? acc.map(function (a) { return '<div class="row between" style="padding:8px 0;border-top:1px solid var(--line)"><div><b>' + esc(a.doc) + '</b><div class="small">Médico · MPPS ' + esc(a.mpps || '12345') + '</div><div class="small muted">Hasta el ' + esc(a.until) + ' · ' + esc(a.scope) + '</div><div class="small ' + (a.on ? 'up' : 'muted') + '" role="status">' + (a.on ? 'Puede ver tus resultados.' : 'Acceso quitado.') + '</div></div><button class="btn ' + (a.on ? 'warn' : 'ghost') + ' sm" type="button" data-a="p-acc" data-v="' + a.id + '">' + (a.on ? 'Quitar acceso' : 'Dar acceso') + '</button></div>'; }).join('') : '<p class="muted">Ningún médico tiene acceso. Cuando uno te lo pida, te llega un aviso para aceptar o rechazar.</p>') + '</div></div>';
   };
   function qrCodeOf(pid) { const n = S.qrN + (parseInt(String(pid).replace(/\D/g, ''), 10) || 1); return 'LABS-' + ('0000' + (4821 + n * 37)).slice(-4) + '-' + ['KQ7P', 'M2XD', 'R9TC', 'H4VN', 'B8WZ'][n % 5]; }
   EXT.qrCodeOf = qrCodeOf;
@@ -275,10 +278,13 @@
   S.login = { step: 'form', fails: 0, lockUntil: 0, cfails: 0, acct: null, note: '' };
   function loginView() {
     const g = S.login; let b = '';
-    const DEMO = [['lab', 'Laboratorio', 'Dueña y bioanalista. Lo ve todo y firma.'], ['recep', 'Recepción', 'Atiende al paciente: lo registra, crea la orden y cobra.'], ['pat', 'Paciente', 'Ve sus resultados y su código QR.'], ['doc', 'Médico', 'Ve los resultados que el paciente le permite.'], ['adm', 'Superadmin', 'Dueño de LABS: suscripciones y cobros.']];
-    const demos = '<div class="card note"><b>Entrar sin clave (demostración)</b><p class="small muted">Elige quién quieres ser:</p><div class="demogrid">' + DEMO.map(function (x) { return '<button class="demobtn" type="button" data-a="demo" data-v="' + x[0] + '"><b>' + x[1] + '</b><span>' + x[2] + '</span></button>'; }).join('') + '</div><details class="acc"><summary>Ver correos y clave</summary><span class="small muted">lab@demo.com · recep@demo.com · pat@demo.com · doc@demo.com · adm@demo.com. Clave: demo1234. Código de seguridad: 123456.</span></details></div>';
-    if (g.step === 'form') b = '<div class="card"><h1>Entrar a LABS</h1><p class="muted">Tus resultados de laboratorio, en un solo lugar.</p>' + (g.note ? '<div class="okmsg" role="status">' + esc(g.note) + '</div>' : '') + fld('Correo', 'lg-email', { type: 'email', ph: 'tu@correo.com', enter: 'lg-go' }) + fld('Clave', 'lg-pass', { type: 'password', enter: 'lg-go' }) + errBox('lg') + '<button class="btn" type="button" data-a="lg-go">Entrar</button><div class="row between"><button class="btn ghost sm" type="button" data-a="lg-forgot">Olvidé mi clave</button><button class="btn ghost sm" type="button" data-a="lg-reg">Nuevo paciente</button></div></div>' + demos;
-    else if (g.step === 'code') b = '<div class="card"><h1>Código de seguridad</h1><p class="muted">Te enviamos un código de 6 números al teléfono o correo registrado.</p><div class="okmsg">Para la demostración, el código es 123456.</div>' + fld('Código', 'lg-code', { max: 6, mode: 'numeric', enter: 'lg-code' }) + errBox('lg') + '<button class="btn" type="button" data-a="lg-code">Verificar</button><div class="row between"><button class="btn ghost sm" type="button" data-a="lg-resend">Reenviar código</button><button class="btn ghost sm" type="button" data-a="lg-back">Volver</button></div></div>';
+    const IC = { lab: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 15h9"/>', recep: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>', pat: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>', doc: '<path d="M6 3v6a4 4 0 0 0 8 0V3M10 13v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="12" r="2"/>', adm: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>' };
+    const DEMO = [['lab', 'Laboratorio'], ['recep', 'Recepción'], ['pat', 'Paciente'], ['doc', 'Médico'], ['adm', 'Superadmin']];
+    const demos = '<div class="card demo-card"><div class="demo-h"><b>Entrar sin clave</b><span class="chip gray">Demostración</span></div><div class="demogrid">' + DEMO.map(function (x) { return '<button class="demobtn" type="button" data-a="demo" data-v="' + x[0] + '"><span class="dico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC[x[0]] + '</svg></span><b>' + x[1] + '</b></button>'; }).join('') + '</div><details class="acc demo-help"><summary>Ver correos y clave</summary><span class="small muted">lab@demo.com · recep@demo.com · pat@demo.com · doc@demo.com · adm@demo.com. Clave: demo1234. Código de seguridad: 123456.</span></details></div>';
+    let home = '';
+    if (g.step === 'form') home = '<div class="lhome"><section class="lhero"><span class="lmark"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M12 2.5c-3.6 4.6-6 7.8-6 11.1a6 6 0 0 0 12 0c0-3.3-2.4-6.5-6-11.1z"/></svg></span><h1>Tus resultados de laboratorio, <em>claros y seguros</em></h1><p class="lead">Un solo lugar para pacientes, médicos y laboratorios de Venezuela.</p><ul class="ltrust"><li><i aria-hidden="true">✓</i>Resultados en tu teléfono, sin tecnicismos</li><li><i aria-hidden="true">✓</i>Tus datos y tu cédula protegidos</li><li><i aria-hidden="true">✓</i>Ordena y paga con un QR, sin hacer fila</li></ul></section><div class="lside"><div class="card lcard"><h2>Bienvenido</h2><p class="muted">Entra a tu cuenta</p>' + (g.note ? '<div class="okmsg" role="status">' + esc(g.note) + '</div>' : '') + fld('Correo', 'lg-email', { type: 'email', ph: 'tu@correo.com', enter: 'lg-go' }) + fld('Clave', 'lg-pass', { type: 'password', enter: 'lg-go' }) + errBox('lg') + '<button class="btn" type="button" data-a="lg-go">Entrar</button><div class="llinks"><button class="btn ghost sm" type="button" data-a="lg-forgot">Olvidé mi clave</button><button class="btn ghost sm" type="button" data-a="lg-reg">Soy paciente nuevo</button></div></div>' + demos + '</div></div>';
+    if (home) return '<div class="login wide">' + home + '<p class="byline">BY INSANITY MEDIA LLC<sup>®</sup> · All rights reserved</p></div>';
+    if (g.step === 'code') b = '<div class="card"><h1>Código de seguridad</h1><p class="muted">Te enviamos un código de 6 números al teléfono o correo registrado.</p><div class="okmsg">Para la demostración, el código es 123456.</div>' + fld('Código', 'lg-code', { max: 6, mode: 'numeric', enter: 'lg-code' }) + errBox('lg') + '<button class="btn" type="button" data-a="lg-code">Verificar</button><div class="row between"><button class="btn ghost sm" type="button" data-a="lg-resend">Reenviar código</button><button class="btn ghost sm" type="button" data-a="lg-back">Volver</button></div></div>';
     else if (g.step === 'fp1') b = '<div class="card"><h1>Recuperar mi clave</h1><p class="muted">Escribe tu correo y te enviamos un enlace.</p>' + fld('Correo', 'fp-email', { type: 'email', enter: 'fp-send' }) + errBox('fp') + '<button class="btn" type="button" data-a="fp-send">Enviar enlace</button><button class="btn ghost sm" type="button" data-a="lg-back">Volver</button></div>';
     else if (g.step === 'fp2') b = '<div class="card"><h1>Revisa tu correo</h1><p>Si el correo está registrado, te enviamos un enlace para elegir una clave nueva. Vence en 30 minutos.</p><div class="okmsg">En la demostración puedes abrir el enlace aquí:</div><button class="btn" type="button" data-a="fp-open">Abrir el enlace de ejemplo</button><button class="btn ghost sm" type="button" data-a="lg-back">Volver</button></div>';
     else if (g.step === 'fp3') b = '<div class="card"><h1>Clave nueva</h1>' + fld('Clave nueva', 'pw-new', { type: 'password' }) + '<div id="pwbox">' + meterHtml(F('pw-new')) + '</div>' + fld('Repite la clave', 'pw-new2', { type: 'password', enter: 'fp-save' }) + errBox('fp') + '<button class="btn" type="button" data-a="fp-save">Guardar clave nueva</button></div>';
@@ -312,24 +318,25 @@
 
   /* ---------- Teléfono: menú de botones, una pantalla por opción, botón atrás ---------- */
   function isMob() { return !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches); }
-  const NO_SPLIT = { 'lab/nueva': 1, 'lab/resultado': 1, 'lab/ordenes': 1, 'lab/pacientes': 1, 'doc/lista': 1, 'doc/firma': 1 };
+  const NO_SPLIT = { 'lab/nueva': 1, 'pat/lista': 1, 'pat/autoorden': 1, 'lab/resultado': 1, 'lab/ordenes': 1, 'lab/pacientes': 1, 'doc/lista': 1, 'doc/firma': 1, 'doc/carnet': 1, 'doc/cobros': 1 };
   function secTitle(el, n) { const h = el.querySelector('h2,h3'); return h ? h.textContent.replace(/\s+/g, ' ').trim() : 'Sección ' + (n + 1); }
   function sectionize(html, key) {
     if (NO_SPLIT[key] || /\/(inicio|menu|qr)$/.test(key)) return html;
-    const box = document.createElement('div'); box.innerHTML = html; const pre = [], secs = [];
+    const box = document.createElement('div'); box.innerHTML = html; const pre = [], secs = [], post = [];
     Array.prototype.forEach.call(box.children, function (el) {
       if (el.classList.contains('kpi') || el.querySelector('.kpi')) pre.push(el);
       else if (el.classList.contains('card')) secs.push(el);
       else if (el.querySelector(':scope > .card')) Array.prototype.forEach.call(el.children, function (c) { if (c.classList.contains('card')) secs.push(c); else pre.push(c); });
+      else if (el.classList.contains('byline')) post.push(el);
       else pre.push(el);
     });
     if (secs.length < 4) return html;
     S.sec = S.sec || {}; const cur = S.sec[key];
     if (cur !== undefined && cur !== null && secs[cur]) {
       const keep = pre.filter(function (e) { return e.querySelector('.seg') || e.classList.contains('banner'); });
-      return keep.map(function (e) { return e.outerHTML; }).join('') + secs[cur].outerHTML;
+      return keep.map(function (e) { return e.outerHTML; }).join('') + secs[cur].outerHTML + post.map(function (e) { return e.outerHTML; }).join('');
     }
-    return pre.map(function (e) { return e.outerHTML; }).join('') + '<div class="card"><h2>Toca lo que quieres ver</h2><div class="secs">' + secs.map(function (e, i) { return '<button type="button" class="secbtn" data-a="sec" data-v="' + i + '"><span>' + esc(secTitle(e, i)) + '</span><i aria-hidden="true">›</i></button>'; }).join('') + '</div></div>';
+    return pre.map(function (e) { return e.outerHTML; }).join('') + '<div class="card"><h2>Toca lo que quieres ver</h2><div class="secs">' + secs.map(function (e, i) { return '<button type="button" class="secbtn" data-a="sec" data-v="' + i + '"><span>' + esc(secTitle(e, i)) + '</span><i aria-hidden="true">›</i></button>'; }).join('') + '</div></div>' + post.map(function (e) { return e.outerHTML; }).join('');
   }
   function mobShell(r, page, nav, view, ok, banner, who) {
     const hub = false;
@@ -478,7 +485,7 @@
   A['p-back'] = function () { S.resIdx = null; render(); window.scrollTo(0, 0); };
   A['p-pdf'] = function (v) { const i = parseInt(v, 10); S.modal = { type: 'pdf', i: i, fresh: true }; addSeen(D.PATIENT_RESULTS[i].pid, 'Tú', 'Abriste el documento firmado ' + D.PATIENT_RESULTS[i].id); render(); };
   A['p-share'] = function (v) { const i = parseInt(v, 10); S.modal = { type: 'share', i: i, fresh: true }; addSeen(D.PATIENT_RESULTS[i].pid, 'Tú', 'Creaste un enlace temporal para ' + D.PATIENT_RESULTS[i].id); render(); };
-  A['d-pdf'] = function (v) { const i = parseInt(v, 10); S.modal = { type: 'pdf', i: i, fresh: true }; addSeen(D.PATIENT_RESULTS[i].pid, 'Dra. Marisol Pérez', 'Abrió el resultado ' + D.PATIENT_RESULTS[i].id); render(); };
+  A['d-pdf'] = function (v) { const i = parseInt(v, 10); S.modal = { type: 'pdf', i: i, fresh: true }; addSeen(D.PATIENT_RESULTS[i].pid, window.DOCP(), 'Abrió el resultado ' + D.PATIENT_RESULTS[i].id); render(); };
   A['dlsheet'] = function (v) { const i = parseInt(v, 10); const r = D.PATIENT_RESULTS[i]; const html = '<!doctype html><meta charset="utf-8"><title>' + r.id + '</title><body style="font-family:sans-serif;max-width:720px;margin:20px auto">' + U.sheetHtml(r, true) + '</body>'; download('resultado-' + r.id + '.html', 'text/html', html); };
   A['p-qrnew'] = function () { S.qrN++; S.qrEnds = Date.now() + 300000; render(); };
   A['p-acc'] = function (v) { const a = S.access.filter(function (x) { return x.id === v; })[0]; a.on = !a.on; addSeen(a.pid, 'Tú', (a.on ? 'Diste acceso a ' : 'Quitaste el acceso a ') + a.doc); notify('doc', 'Un paciente ' + (a.on ? 'te devolvió' : 'te quitó') + ' el acceso.', null); render(); };
@@ -508,7 +515,7 @@
     const p = S.patients.filter(function (x) { return x.ci.replace(/\D/g, '') === cn && x.id !== 'p7'; })[0]; if (!p) return setErr('rq', 'No encontramos un paciente con esa cédula. Revisa los números.');
     if (S.docPatients.some(function (x) { return x.pid === p.id; })) return setErr('rq', 'Ese paciente ya está en tu lista.'); if (S.docReqOut.some(function (x) { return x.pid === p.id && x.state === 'Pendiente'; })) return setErr('rq', 'Ya enviaste una solicitud a ese paciente. Espera su respuesta.');
     const id = uid('rq'); S.docReqOut.unshift({ id: id, pid: p.id, name: p.name.split(' ')[0] + ' ' + p.name.split(' ')[1][0] + '.', scope: F('rq-scope', 'Todos los resultados'), months: F('rq-months', '3'), state: 'Pendiente' });
-    notify('pat', 'La Dra. Marisol Pérez pide acceso a tus resultados (' + F('rq-scope', 'Todos los resultados').toLowerCase() + ', ' + F('rq-months', '3') + ' meses).', { type: 'accreq', ref: id }, p.id); clearF('rq-'); S.err = {}; toast('Solicitud enviada. El paciente decide si te da acceso.');
+    notify('pat', window.DOCART() + ' pide acceso a tus resultados (' + F('rq-scope', 'Todos los resultados').toLowerCase() + ', ' + F('rq-months', '3') + ' meses).', { type: 'accreq', ref: id }, p.id); clearF('rq-'); S.err = {}; toast('Solicitud enviada. El paciente decide si te da acceso.');
   };
   A['d-save'] = function () { const d = S.docProfile; const n = F('dp-name2', d.name).trim(); if (n.length < 5) return setErr('dpf', 'Escribe tu nombre completo.'); const ph = F('dp-phone', d.phone).replace(/\D/g, ''); if (!/^04\d{9}$/.test(ph)) return setErr('dpf', 'El teléfono debe tener 11 números y empezar por 04.'); d.name = n; d.esp = F('dp-esp', d.esp).trim() || d.esp; d.phone = ph; S.auth.name = n; S.err = {}; toast('Datos guardados.'); };
   A['d-prefs'] = function () { toast('Preferencias guardadas.'); };

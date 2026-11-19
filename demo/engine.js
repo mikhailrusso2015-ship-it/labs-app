@@ -4,7 +4,7 @@
 
   /* ---------- Formato ---------- */
   const nfBs = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const nfUsd = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const nfUsd = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const nfInt = new Intl.NumberFormat('es-VE', { maximumFractionDigits: 0 });
   function fmtUsd(v) { return '$ ' + nfUsd.format(v); }
   function fmtBs(v) { return 'Bs ' + nfBs.format(v); }

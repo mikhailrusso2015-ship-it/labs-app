@@ -247,6 +247,16 @@ body.has-dock .toast { bottom: 110px; } .modal-bg, .modal { z-index: 60; }
 .perbtn .chev { font-size: 18px; transform: rotate(90deg); } .perbtn .chev.open { transform: rotate(-90deg); }
 .permenu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 170px; background: #fff; border-radius: 16px; padding: 6px; box-shadow: 0 14px 34px rgba(20,25,58,.28); display: flex; flex-direction: column; }
 .peropt { display: flex; justify-content: space-between; align-items: center; min-height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: none; font: inherit; font-size: 14px; color: #1D2459; cursor: pointer; text-align: left; } .peropt:hover { background: #EEF1FF; } .peropt[aria-selected="true"] { background: #E6EAFF; font-weight: 700; color: var(--link); }
+
+/* ---- Menú refinado ---- */
+.mgt { font-size: 11.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: #4A5393; padding: 10px 6px 0; }
+.mgrp { background: rgba(255,255,255,.72); backdrop-filter: blur(8px); border-radius: 20px; padding: 4px 6px; box-shadow: 0 6px 20px rgba(51,69,181,.12), inset 0 0 0 1px rgba(255,255,255,.7); display: flex; flex-direction: column; }
+.mrow { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 8px 8px; border: 0; background: none; font: inherit; color: #1D2459; text-align: left; cursor: pointer; border-radius: 14px; position: relative; }
+.mrow + .mrow::before { content: ''; position: absolute; top: 0; left: 58px; right: 8px; height: 1px; background: rgba(51,69,181,.1); }
+.mrow:active { background: rgba(63,81,201,.1); }
+.mic { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; flex: none; }
+.ml { flex: 1; font-size: 15px; font-weight: 600; }
+.mrow .badge { font-style: normal; }
 </style>
 </head>
 <body>

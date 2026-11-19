@@ -107,11 +107,47 @@
       '<div class="card"><h2>Hay que atender hoy</h2><div class="row">' + chips.map(function (c) { return '<button class="btn ghost" type="button" data-a="nav" data-v="' + c[0] + '">' + c[1] + ' ' + c[2] + '</button>'; }).join('') + '</div></div>';
   };
 
-  /* ---------- Pantalla "Menú": todas las opciones, agrupadas ---------- */
+  /* ---------- Pantalla "Menú": todas las opciones, agrupadas, con iconos ---------- */
+  const MI = {
+    atencion: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 6H6a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-2"/><path d="m9 14 2 2 4-4"/>',
+    nueva: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/>',
+    ordenes: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+    pacientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14a5 5 0 0 1 4.5 5"/>',
+    resumen: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    catalogo: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V4h9l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="9" r="1.3"/>',
+    reportes: '<path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/>',
+    red: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/>',
+    firma: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+    equipo: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+    config: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+    suscripcion: '<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 11h18"/>',
+    avisos: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>',
+    soporte: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>',
+    lista: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+    sol: '<path d="M4 13l2-8h12l2 8v6H4z"/><path d="M4 13h5a3 3 0 0 0 6 0h5"/>',
+    pedir: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6"/>',
+    qr: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/>',
+    pagar: '<path d="M3 7a2 2 0 0 1 2-2h13v4"/><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="16.5" cy="13.5" r="1.2"/>',
+    quien: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    labs: '<path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16M14 9h5a1 1 0 0 1 1 1v11M2 21h20M8 8h2M8 12h2M8 16h2"/>',
+    planes: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V4h9l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="9" r="1.3"/>',
+    usuarios: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14a5 5 0 0 1 4.5 5"/>',
+    claves: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    registro: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 6H6a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-2M9 12h6M9 16h6"/>'
+  };
+  MI.pagos = MI.pagar; MI.ajustes = MI.config;
+  const TINT = [['#E6EAFF', '#3345B5'], ['#EDE7FF', '#5B3BD6'], ['#DDF5EC', '#0B7A55'], ['#FFEBD9', '#B45309'], ['#FDE4EE', '#B8326A']];
   function menuView(role) {
     const sub = (S.auth && S.auth.sub) || 'owner'; const items = EXT.nav[role].filter(function (i) { return !i.only || i.only.indexOf(sub) >= 0; }).filter(function (i) { return i.sep || (!i.hidden && ['inicio', 'menu', 'perfil'].indexOf(i.id) < 0); });
-    const out = []; items.forEach(function (i, k) { if (i.sep && (!items[k + 1] || items[k + 1].sep)) return; out.push(i); });
-    return '<div class="head"><div><h1>Menú</h1><p>Todas las opciones. Toca la que necesites.</p></div></div><div class="hub">' + out.map(function (i) { const b = i.badge ? i.badge() : ''; return i.sep ? '<div class="hubsep">' + esc(i.sep) + '</div>' : '<button type="button" class="tile" data-a="nav" data-v="' + i.id + '"><span>' + esc(i.label) + '</span>' + (b ? '<em class="badge">' + b + '</em>' : '') + '</button>'; }).join('') + '</div>';
+    const groups = []; let cur = { t: '', rows: [] }; groups.push(cur);
+    items.forEach(function (i) { if (i.sep) { cur = { t: i.sep, rows: [] }; groups.push(cur); } else cur.rows.push(i); });
+    return '<div class="head"><div><h1>Menú</h1><p>Todas las opciones de tu cuenta.</p></div></div>' + groups.filter(function (g) { return g.rows.length; }).map(function (g, gi) {
+      const t = TINT[gi % TINT.length];
+      return (g.t ? '<div class="mgt">' + esc(g.t) + '</div>' : '') + '<div class="mgrp">' + g.rows.map(function (i) {
+        const b = i.badge ? i.badge() : ''; const ic = MI[i.id] || '<circle cx="12" cy="12" r="3"/>';
+        return '<button type="button" class="mrow" data-a="nav" data-v="' + i.id + '"><span class="mic" style="background:' + t[0] + ';color:' + t[1] + '"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ic + '</svg></span><span class="ml">' + esc(i.label) + '</span>' + (b ? '<em class="badge">' + b + '</em>' : '') + '<i class="chev" aria-hidden="true">›</i></button>';
+      }).join('') + '</div>';
+    }).join('');
   }
   ['lab', 'pat', 'doc', 'adm'].forEach(function (r) {
     V[r].menu = function () { return menuView(r); };

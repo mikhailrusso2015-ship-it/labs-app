@@ -109,3 +109,9 @@ Cada orden muestra su avance: Paciente, Orden y cobro, Confirmación, Muestra, R
 - Historial de órdenes por paciente y nota interna. Solo ve su lista el personal de ese laboratorio.
 
 **Teléfono:** cada rol abre un menú de botones; cada opción es una pantalla nueva con botón Atrás. Las pantallas largas se dividen en secciones que se abren al tocarlas. La hoja de resultados es tamaño carta y se ajusta al ancho.
+
+## 8. Configuración, métodos de pago y atajos
+- **Mi suscripción** ahora está dentro de **Configuración** (plan, vencimiento, reportar pago, cambiar plan, cancelar, historial). Ya no es una opción aparte del menú.
+- **Métodos de pago del laboratorio**: agregar, editar, activar/apagar y quitar. Cada dato tiene un icono de dos hojas para copiarlo y un botón "Copiar todo". El paciente los ve en **Cómo pagar**.
+- **Métodos de pago del superadmin** (Ajustes): los laboratorios los ven en Configuración, en "Cómo pagar mi suscripción a LABS", también con copiar.
+- **Atajos de demostración**: cada rol tiene su tarjeta con una línea que explica qué hace (Recepción = atiende al paciente, crea la orden y cobra).

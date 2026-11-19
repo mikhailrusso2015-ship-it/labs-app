@@ -60,7 +60,7 @@
   /* ---------- Resumen / catálogo / reportes / red / firma envueltos ---------- */
   V.resumen = function () {
     const nw = S.orders.filter(function (o) { return o.status === 'Esperando paciente'; }).length, pr = pendingCount(), np = S.orders.filter(function (o) { return !o.paid && o.status !== 'Anulada'; }).length;
-    const lab = S.labs[0]; const warn = lab.due <= 7 ? '<div class="banner" role="status">Tu suscripción vence en ' + lab.due + ' días. <button class="btn ghost sm" type="button" data-a="nav" data-v="suscripcion">Ir a Mi suscripción</button></div>' : '';
+    const lab = S.labs[0]; const warn = lab.due <= 7 ? '<div class="banner" role="status">Tu suscripción vence en ' + lab.due + ' días. <button class="btn ghost sm" type="button" data-a="nav" data-v="suscripcion">Ir a Configuración</button></div>' : '';
     return warn + '<div class="card"><h2>Pendientes de hoy</h2><div class="row"><button class="btn ghost" type="button" data-a="o-filter" data-v="esperando">' + nw + ' esperando al paciente</button><button class="btn ghost" type="button" data-a="o-filter" data-v="proceso">' + pr + ' por cargar resultados</button><button class="btn ghost" type="button" data-a="o-filter" data-v="sinpago">' + np + ' sin cobrar</button><button class="btn" type="button" data-a="nav" data-v="nueva">Nueva orden</button></div></div>' + LV.resumen();
   };
   V.catalogo = function () {
@@ -292,7 +292,7 @@
       '<div class="card"><h2>Mis datos</h2><div class="row"><button class="btn ghost" type="button" data-a="cf-export">Descargar órdenes (CSV)</button></div></div>';
   };
   A['cf-save'] = function () { const c = S.lcfg; const n = F('cf-name', c.name).trim(), rif = F('cf-rif', c.rif).trim().toUpperCase(); if (n.length < 3) return setErr('cf', 'Escribe el nombre del laboratorio.'); if (!/^[JGVE]-?\d{8}-?\d$/.test(rif)) return setErr('cf', 'El RIF debe verse así: J-12345678-9.'); c.name = n; c.rif = rif; c.phone = F('cf-phone', c.phone); c.hours = F('cf-hours', c.hours); c.addr = F('cf-addr', c.addr); S.labs[0].name = n; S.err = {}; logAudit(S.auth.name, 'Actualizó los datos del laboratorio'); toast('Datos guardados.'); };
-  A['cf-sede-add'] = function () { const n = F('cf-sede').trim(); const lim = { 'Básico': 1, 'Pro': 3, 'Red': 99 }[S.labs[0].plan]; if (n.length < 4) return setErr('cfs', 'Escribe el nombre de la sede.'); if (S.lcfg.sedes.length >= lim) return setErr('cfs', 'Tu plan ' + S.labs[0].plan + ' no permite más sedes. Cambia de plan en Mi suscripción.'); S.lcfg.sedes.push(n); delete S.f['cf-sede']; S.err = {}; toast('Sede agregada.'); };
+  A['cf-sede-add'] = function () { const n = F('cf-sede').trim(); const lim = { 'Básico': 1, 'Pro': 3, 'Red': 99 }[S.labs[0].plan]; if (n.length < 4) return setErr('cfs', 'Escribe el nombre de la sede.'); if (S.lcfg.sedes.length >= lim) return setErr('cfs', 'Tu plan ' + S.labs[0].plan + ' no permite más sedes. Cambia de plan en Configuración.'); S.lcfg.sedes.push(n); delete S.f['cf-sede']; S.err = {}; toast('Sede agregada.'); };
   A['cf-sede-del'] = function (v) { S.lcfg.sedes.splice(parseInt(v, 10), 1); toast('Sede quitada.'); };
   A['cf-pay'] = function () { const c = S.lcfg; const next = {}; let any = false; Object.keys(c.pay).forEach(function (k) { next[k] = !!F('cp-' + k, c.pay[k]); if (next[k]) any = true; }); if (!any) return setErr('cfp', 'Debes aceptar al menos un método de pago.'); c.pay = next; S.err = {}; toast('Métodos de pago guardados.'); };
   A['cf-notice'] = function () { S.lcfg.mail = !!F('cf-mail', S.lcfg.mail); toast('Preferencia guardada.'); };

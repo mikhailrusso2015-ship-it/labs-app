@@ -302,7 +302,7 @@
     S[acct.role] = 'inicio';
     acct.last = when(); S.login = { step: 'form', fails: 0, lockUntil: 0, cfails: 0, acct: null, note: '' };
     if (acct.role === 'lab' || acct.role === 'adm') logAudit(acct.name, 'Inició sesión');
-    render(); window.scrollTo(0, 0); if (!silent) toast('Bienvenido, ' + acct.name.split(' (')[0] + '.');
+    render(); window.scrollTo(0, 0);
   }
   function clearAllForms() { S.f = {}; S.err = {}; }
   function logout() { S.auth = null; S.modal = null; S.login = { step: 'form', fails: 0, lockUntil: 0, cfails: 0, acct: null, note: 'Cerraste la sesión.' }; clearAllForms(); render(); window.scrollTo(0, 0); }

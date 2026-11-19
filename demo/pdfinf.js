@@ -18,6 +18,10 @@
     document.head.appendChild(s);
   }
 
+  EXT.pdfKit = { C: C, T: T, logo: ASSET.logo, fonts: function (doc) { doc.addFileToVFS('Poppins-500.ttf', ASSET.f500); doc.addFont('Poppins-500.ttf', 'Poppins', 'normal'); doc.addFileToVFS('Poppins-700.ttf', ASSET.f700); doc.addFont('Poppins-700.ttf', 'Poppins', 'bold'); } };
+  EXT.pdfLoadLib = loadLib;
+  window.LABS_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+
   function who(r) {
     const p = X.personOf(r.pid) || {}; const parts = String(p.name || r.patient || '').split(' ');
     return { first: p.first || parts[0] || '—', last: p.last || parts.slice(1).join(' ') || '—', ci: p.ci || r.ci || '—', phone: p.phone || 'No registrado', age: r.age != null ? r.age : p.age, sex: r.sex === 'F' ? 'Femenino' : r.sex === 'M' ? 'Masculino' : '—' };
@@ -30,7 +34,8 @@
   function stLabel(x) { return x.level === 'normal' ? 'Normal' : (x.label || 'Fuera del margen'); }
   function stColor(x) { return x.level === 'normal' ? C.ok : x.level === 'vigilar' ? C.warn : C.crit; }
 
-  function build(r) {
+  function build(r, opts) {
+    opts = opts || {};
     const jsPDF = window.jspdf.jsPDF; const doc = new jsPDF({ unit: 'pt', format: 'letter', compress: true });
     doc.addFileToVFS('Poppins-500.ttf', ASSET.f500); doc.addFont('Poppins-500.ttf', 'Poppins', 'normal');
     doc.addFileToVFS('Poppins-700.ttf', ASSET.f700); doc.addFont('Poppins-700.ttf', 'Poppins', 'bold');
@@ -153,6 +158,11 @@
       });
     }
 
+    if (opts.by) {
+      const tl = lines((opts.view ? 'Visto por ' : 'Descargado por ') + opts.by + ' el ' + X.longDate(D.TODAY) + ', con autorización del paciente' + (opts.until ? ' vigente hasta el ' + opts.until : '') + '. Esta ' + (opts.view ? 'consulta' : 'descarga') + ' quedó anotada en el registro de accesos del paciente. Guárdalo con secreto profesional y no lo compartas.', CW - 28, 'normal', 8.5); const th = tl.length * 11.5 + 30; ensure(th + 8);
+      fill(C.bg); doc.roundedRect(M, y, CW, th, 6, 6, 'F'); font('bold', 8.5); ink(C.primary); doc.text('TRAZABILIDAD', M + 14, y + 16); font('normal', 8.5); ink(C.ink); doc.text(tl, M + 14, y + 29); y += th + 10;
+    }
+
     // Aviso
     (function () {
       const t = 'Esto es una orientación automática generada por el médico virtual de LABS (versión de demostración, con reglas médicas escritas a mano). No es un diagnóstico, no receta medicinas y no reemplaza la evaluación de un médico. Los valores vienen del laboratorio y el médico virtual no los cambia. Si el paciente se siente mal, debe ir a emergencias sin esperar esta lectura.';
@@ -181,4 +191,89 @@
       } catch (e) { console.error(e); U.toast('No se pudo crear el PDF. Inténtalo otra vez.'); }
     });
   };
+
+  /* ---------- Médico: descarga del informe, solo con permiso del paciente ---------- */
+  const MES = { ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5, jul: 6, ago: 7, sep: 8, oct: 9, nov: 10, dic: 11 };
+  function untilDate(s) { const m = String(s || '').toLowerCase().match(/(\d{1,2})\s+([a-záéíóú]+)\.?\s+(\d{4})/); if (!m) return null; const mo = MES[m[2].slice(0, 3)]; return mo === undefined ? null : new Date(+m[3], mo, +m[1], 23, 59, 59); }
+  function accessFor(r) { const me = S.docProfile.name; return S.access.filter(function (a) { return a.pid === r.pid && a.doc === me; })[0] || null; }
+  function scopeOk(a, r) { const sc = String(a.scope || '').toLowerCase(); if (!sc || sc.indexOf('todos') >= 0) return true; return String(r.title).toLowerCase().indexOf(sc.replace(/^solo\s+/, '').trim()) >= 0; }
+  function seen(pid, who, what) { S.seen.unshift({ when: X.when(), who: who, what: what, pid: pid }); }
+  const esc = U.esc;
+
+  /* ---------- Vista previa del informe (el ojo): se ve sin descargar, en PC y en teléfono ---------- */
+  function loadScript(src, ok) { const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = function () { U.toast('No se pudo abrir la vista. Revisa tu conexión e inténtalo otra vez.'); }; document.head.appendChild(el); }
+  function loadPdfJs(cb) { if (window.pdfjsLib) return cb(); loadScript('pdf.min.js?v=20261119x', function () { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js?v=20261119x'; cb(); }); }
+  function pvHtml() {
+    const m = S.modal; const z = !!m.zoom;
+    return '<div class="row between"><span class="small muted">Vista del informe. No se descarga nada.</span><button class="btn ghost sm" type="button" data-a="pv-zoom">' + (z ? 'Alejar' : 'Acercar') + '</button></div>' +
+      '<div style="overflow:auto;max-height:68vh;border-radius:12px;background:#D7DCF5;padding:8px;-webkit-overflow-scrolling:touch"><div style="display:flex;flex-direction:column;gap:10px;width:' + (z ? '190%' : '100%') + '">' +
+      m.pvImgs.map(function (u, i) { return '<img src="' + u + '" alt="Página ' + (i + 1) + ' de ' + m.pvImgs.length + ' del informe" style="width:100%;height:auto;border-radius:6px;box-shadow:0 2px 10px rgba(20,25,58,.25);background:#fff">'; }).join('') + '</div></div>';
+  }
+  function preview(r, opts, title, okBtn) {
+    S.modal = { type: 'dlg', title: title, html: '<p class="muted">Preparando la vista del informe...</p>', ok: null, extra: null, fresh: true, big: true, pv: true }; window.render();
+    const fail = function (e) { console.error(e); if (S.modal && S.modal.pv) { S.modal.html = '<p>No se pudo mostrar el informe. Inténtalo otra vez.</p>'; window.render(); } };
+    loadLib(function () { loadPdfJs(function () {
+      try {
+        const buf = build(r, opts).output('arraybuffer');
+        window.pdfjsLib.getDocument({ data: buf }).promise.then(function (pdf) {
+          const imgs = [];
+          (function next(i) {
+            if (i > pdf.numPages) { if (!S.modal || !S.modal.pv) return; S.modal.pvImgs = imgs; S.modal.zoom = false; S.modal.html = pvHtml(); S.modal.ok = okBtn || null; return window.render(); }
+            pdf.getPage(i).then(function (pg) { const vp = pg.getViewport({ scale: 2 }); const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height; return pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(function () { imgs.push(c.toDataURL('image/jpeg', 0.88)); next(i + 1); }); }).catch(fail);
+          })(1);
+        }).catch(fail);
+      } catch (e) { fail(e); }
+    }); });
+  }
+  A['pv-zoom'] = function () { if (!S.modal || !S.modal.pvImgs) return; S.modal.zoom = !S.modal.zoom; S.modal.html = pvHtml(); window.render(); };
+  A['bm-ver'] = function (v) { const r = D.PATIENT_RESULTS[parseInt(v, 10)]; if (!r) return; preview(r, {}, 'Informe para tu médico', { label: 'Descargar el informe en PDF', a: 'bm-dl', v: v, closeLabel: 'Cerrar' }); };
+
+  function gate(r, needDl) {
+    const a = accessFor(r);
+    if (!a || !a.on) { X.dlg('No tienes acceso', '<p>El paciente no te ha dado acceso a sus resultados, o lo quitó. Pídele acceso desde “Pedir acceso”.</p>'); return null; }
+    const ud = untilDate(a.until);
+    if (ud && ud < D.TODAY) { X.dlg('El acceso venció', '<p>El permiso de este paciente terminó el ' + esc(a.until) + '. Pídele acceso otra vez.</p>'); return null; }
+    if (!scopeOk(a, r)) { X.dlg('Fuera del permiso', '<p>El permiso de este paciente cubre solo: <b>' + esc(a.scope) + '</b>. Este resultado (' + esc(r.title) + ') no está incluido.</p>'); return null; }
+    if (needDl && !a.dl) { X.dlg('Falta el permiso de descarga', '<p>Puedes ver este resultado en la app, pero para <b>descargar el informe en PDF</b> el paciente debe darte un permiso aparte.</p>' + (a.dlAsk ? '<p class="small muted">Ya le pediste permiso. Cuando lo acepte, te llega un aviso.</p>' : '<p class="small muted">Le llegará un aviso al paciente y él decide. Puede tardar.</p>'), a.dlAsk ? null : { label: 'Pedir permiso al paciente', a: 'dl-ask', v: a.id }); return null; }
+    return a;
+  }
+  A['dx-ver'] = function (v) {
+    const r = D.PATIENT_RESULTS[parseInt(v, 10)]; if (!r) return; const a = gate(r, false); if (!a) return;
+    seen(r.pid, window.DOCP(), 'Vio el informe PDF de ' + r.id); U.logAudit(window.DOCP(), 'Vio el informe ' + r.id + ' con permiso del paciente');
+    preview(r, { by: window.DOCP(), until: a.until, view: true }, 'Informe de ' + who(r).first + ' ' + who(r).last, a.dl ? { label: 'Descargar el informe en PDF', a: 'dx-pdf', v: v, closeLabel: 'Cerrar' } : null);
+  };
+  A['dx-pdf'] = function (v) {
+    const r = D.PATIENT_RESULTS[parseInt(v, 10)]; if (!r) return; const a = gate(r, true); if (!a) return;
+    U.toast('Preparando el PDF...');
+    loadLib(function () {
+      try {
+        const nm = (who(r).last || 'paciente').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        build(r, { by: window.DOCP(), until: a.until }).save('informe-medico-' + r.id + '-' + nm + '.pdf');
+        seen(r.pid, window.DOCP(), 'Descargó el informe PDF de ' + r.id); X.notify('pat', window.DOCART() + ' descargó el informe en PDF de ' + r.id + ' con tu permiso.', null, r.pid);
+        U.logAudit(window.DOCP(), 'Descargó el informe PDF ' + r.id + ' con permiso del paciente'); S.modal = null; U.toast('Informe descargado en PDF.'); window.render();
+      } catch (e) { console.error(e); U.toast('No se pudo crear el PDF. Inténtalo otra vez.'); }
+    });
+  };
+  A['dl-ask'] = function (v) {
+    const a = S.access.filter(function (x) { return x.id === v; })[0]; if (!a) return; a.dlAsk = true;
+    X.notify('pat', window.DOCART() + ' pide permiso para descargar tu informe en PDF.', { type: 'dlreq', ref: a.id }, a.pid); seen(a.pid, window.DOCP(), 'Pidió permiso para descargar el informe PDF');
+    S.modal = null; U.toast('Pedido enviado al paciente.'); window.render();
+  };
+  function myNotif(v) { return S.notifs[S.role].filter(function (n) { return n.id === v; })[0]; }
+  A['dlok'] = function (v) {
+    const n = myNotif(v); if (!n) return; const a = S.access.filter(function (x) { return x.id === n.action.ref; })[0]; if (!a) return;
+    a.dl = true; a.dlAsk = false; n.done = 'Permitida'; n.read = true; seen(a.pid, 'Tú', 'Permitiste la descarga del informe PDF a ' + a.doc);
+    X.notify('doc', 'El paciente te permitió descargar su informe en PDF.', { type: 'go', ref: 'lista' }); window.render();
+  };
+  A['dlno'] = function (v) {
+    const n = myNotif(v); if (!n) return; const a = S.access.filter(function (x) { return x.id === n.action.ref; })[0]; if (!a) return;
+    a.dlAsk = false; n.done = 'No permitida'; n.read = true; seen(a.pid, 'Tú', 'No permitiste la descarga del informe PDF a ' + a.doc);
+    X.notify('doc', 'El paciente no permitió la descarga del informe en PDF.', null); window.render();
+  };
+  A['p-accdl'] = function (v) {
+    const a = S.access.filter(function (x) { return x.id === v; })[0]; if (!a || !a.on) return; a.dl = !a.dl; a.dlAsk = false;
+    seen(a.pid, 'Tú', (a.dl ? 'Permitiste' : 'Quitaste') + ' la descarga del informe PDF a ' + a.doc); X.notify('doc', 'Un paciente ' + (a.dl ? 'te permitió' : 'te quitó el permiso de') + ' descargar su informe en PDF.', null); window.render();
+  };
+  const pacc0 = A['p-acc'];
+  A['p-acc'] = function (v) { const a = S.access.filter(function (x) { return x.id === v; })[0]; const was = a && a.on; pacc0(v); if (was && a && !a.on) { a.dl = false; a.dlAsk = false; } };
 })();

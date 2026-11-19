@@ -112,7 +112,7 @@
   }
   A['bm-informe'] = function (v) {
     const r = D.PATIENT_RESULTS[parseInt(v, 10)]; const x = B.med.read(r);
-    dlg('Informe para tu médico', '<p class="small muted">Esto es lo que verá tu médico si se lo compartes. Lo generó el médico virtual y no es un diagnóstico.</p><p><b>' + esc(x.lead) + '</b></p>' + (x.doctor.length ? '<ul class="clean small">' + x.doctor.map(function (d) { return '<li>' + esc(d) + '</li>'; }).join('') + '</ul>' : '') + (x.missing.length ? '<p class="small"><b>Pruebas que ayudarían:</b> ' + esc(x.missing.join('; ')) + '</p>' : ''), { label: 'Descargar el informe en PDF', a: 'bm-dl', v: v });
+    dlg('Informe para tu médico', '<p class="small muted">Esto es lo que verá tu médico si se lo compartes. Lo generó el médico virtual y no es un diagnóstico.</p><p><b>' + esc(x.lead) + '</b></p>' + (x.doctor.length ? '<ul class="clean small">' + x.doctor.map(function (d) { return '<li>' + esc(d) + '</li>'; }).join('') + '</ul>' : '') + (x.missing.length ? '<p class="small"><b>Pruebas que ayudarían:</b> ' + esc(x.missing.join('; ')) + '</p>' : ''), { label: 'Descargar el informe en PDF', a: 'bm-dl', v: v }, { eye: { a: 'bm-ver', v: v } });
   };
   A['bm-dl'] = function (v) { const r = D.PATIENT_RESULTS[parseInt(v, 10)]; EXT.download('informe-orientacion-' + r.id + '.txt', 'text/plain', reportText(r)); S.modal = null; U.toast('Informe descargado.'); render(); };
   render();

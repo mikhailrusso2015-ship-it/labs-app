@@ -71,7 +71,7 @@
   }
   window.UI_dock = function () {
     const el = document.getElementById('dock'); if (!el) return;
-    if (!S.auth) { el.hidden = true; document.body.classList.remove('has-dock'); el.innerHTML = ''; return; }
+    if (!S.auth || !isMob()) { el.hidden = true; document.body.classList.remove('has-dock'); el.innerHTML = ''; return; }
     el.hidden = false; document.body.classList.add('has-dock');
     const cfg = dockCfg(); const page = S[S.role]; const badge = { menu: 0, avisos: 0 };
     const menuN = X.unread(S.role) + (S.role === 'doc' ? S.requests.length : 0) + (S.role === 'adm' ? S.payments.filter(function (p) { return p.status === 'Pendiente'; }).length : 0);
